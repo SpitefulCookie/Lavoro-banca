@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "C:\\Users\\Matt\\Documents\\Python projects"
+		},
+		{
+			"path": "C:\\Users\\Matt\\Documents\\C Projects"
+		},
+		{
+			"path": "..\\..\\..\\IoT website"
+		},
+		{
+			"path": "c:\\Users\\Matt\\Documents\\C#"
+		},
+		{
+			"path": "..\\.."
+		},
+		{
+			"path": "c:\\Users\\Matt\\Documents\\Java projects"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"hangman.C": "cpp",
+			"string.h": "c",
+			"cstdio": "cpp"
+		}
+	}
+}
