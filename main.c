@@ -6,9 +6,7 @@
 #include <time.h>
 #include <dirent.h>
 
-
-
-#define PATHSUFFIX "..\\BANCHE\\"
+#define PATH_SUFFIX "BANCHE"
 
 
                                          //      TIPI
@@ -59,7 +57,7 @@ typedef struct Movimenti {
 
 //void datasystem(int *, int *, int *);
 
-void ottieniBanca(char*, char * );
+int ottieniBanca(char*, char * );
 
 Cliente caricaCliente(char *);
 
@@ -77,7 +75,7 @@ void main(int argc, char* argv[]){
 
     char path[100];
 
-    char buffer[30];
+    char buffer[30]="\0";
 
     int scelta, disconnesso = 1;
 
@@ -137,13 +135,21 @@ void main(int argc, char* argv[]){
 
                         case 1:
                            
-                            ottieniBanca("BANCHE", buffer);
+                            strcpy(path, PATH_SUFFIX);
+
+                            ottieniBanca(path, buffer);
                             
-                            printf("%s", buffer);
+                            //printf("%s", buffer); debug
+
+                            strcat(path, "\\");
+
+                            strcat(path, buffer);
+
+                            fclose(fopen(path, "wb"));
 
                             system("pause");
 
-                            //APRI DATABASE 
+                            //APRI DATABASE <<--implementare "database attualmente aperto" con relativo controllo?
 
                             break;
                         case 2:
@@ -199,7 +205,7 @@ void main(int argc, char* argv[]){
 
         }
 
-    }while(scelta);
+    }while(scelta); //sistemare "Disconnessione"
    
 }
 
@@ -478,30 +484,95 @@ int creaFileMovimenti(int* numero_conto, char* banca){
 
 }
 
-void ottieniBanca(char * path, char * buffer){
+int ottieniBanca(char * path, char * buffer){
 
-    DIR *folder;
+    DIR *cartella;
 
     struct dirent *record;
 
     int cont = 0;
 
-    folder = opendir(path);
+    char conferma, auxBuffer[30]="\0";
 
-    while( (record=readdir(folder)) ){
+    cartella = opendir(path);
+
+    if(cartella == NULL){ // se non vi e' una directory "BANCHE", la creo
+
+        mkdir(path);
+
+    }
+        
+    while( (record=readdir(cartella)) ){
 
         if(record->d_namlen>2){
             
             strcpy(buffer, record->d_name);
-
-            printf("[%d] %s\n", cont, record->d_name);
+            
+            printf("[%d] %s\n", cont, record->d_name); //<-- ottimizzare, aggiungere dimensione e data creazione (esegui con debugger)
 
             cont++;
 
         }
-        
+    
+    } //implementare scelta del database
+
+    closedir(cartella);
+
+    if(!cont){ //se non è stato trovato almeno un database bancario chiedo all'utente se ne vuole creare uno nuovo
+
+        printf("\n\tNon e' stata trovato nessun database bancario, crearne uno nuovo? [y/n] ");
+
+        fflush(stdin);
+
+        conferma = getchar();
+
+        if(toupper(conferma) == 'Y'){
+            
+            conferma = '\0';
+
+            do{
+
+                printf("\n\tInserire il nome del database da creare: ");
+
+                fflush(stdin);
+                
+                gets(auxBuffer);
+
+                if(auxBuffer == " " || auxBuffer == "\n" || auxBuffer == "\0"){ //controllo che non sia stato inserito un nome "vuoto" <<-- verificare che funzioni correttamente
+
+                    printf("\n\tErrore! inserire un valore valido!");
+
+                } else{
+
+                    printf("\n\tIl nome del nuovo database sara' %s, confermare? [y/n] ", auxBuffer);
+
+                    fflush(stdin);
+
+                    conferma = getchar();
+
+                    if(toupper(conferma) == 'Y'){strcpy(buffer, auxBuffer);} 
+
+                }
+                
+
+            }while(toupper(conferma)!='Y'&& toupper(conferma)!='N'); 
+            
+        } else{
+
+            printf("\n\n\tOperazione annullata");
+            
+        }
+
+        if(toupper(conferma)=='Y'){
+
+            //if(creadatabase()){return 1;} else{return 0;} <<-- implementare la funzione
+            
+            printf("\n\n\tChiamata a crea database bancario"); //debug
+
+        }
+
     }
 
-    closedir(folder);
+   // if(cont){return 1;}else{return 0;} //se ho almeno un database (che sia presente a priori o meno) restituisco 1 <-- valutare se me serve o meno questa linea di codice
 
 }
