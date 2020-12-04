@@ -59,7 +59,7 @@ typedef struct Movimenti {
 
 //void datasystem(int *, int *, int *);
 
-void ottieniBanche(char*, char * );
+void ottieniBanca(char*, char * );
 
 Cliente caricaCliente(char *);
 
@@ -137,10 +137,10 @@ void main(int argc, char* argv[]){
 
                         case 1:
                            
-                            ottieniBanche("BANCHE", buffer);
+                            ottieniBanca("BANCHE", buffer);
                             
                             printf("%s", buffer);
-                            
+
                             system("pause");
 
                             //APRI DATABASE 
@@ -478,7 +478,7 @@ int creaFileMovimenti(int* numero_conto, char* banca){
 
 }
 
-void ottieniBanche(char * path, char * buffer){
+void ottieniBanca(char * path, char * buffer){
 
     DIR *folder;
 
