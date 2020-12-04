@@ -2,8 +2,13 @@
 //#include <stdlib.h>
 #include <strings.h>
 #include <ctype.h> //toupper()
-#include <synchapi.h>//Sleep()
+#include <synchapi.h> //Sleep()
 #include <time.h>
+#include <dirent.h>
+
+
+
+#define PATHSUFFIX "..\\BANCHE\\"
 
 
                                          //      TIPI
@@ -54,6 +59,8 @@ typedef struct Movimenti {
 
 //void datasystem(int *, int *, int *);
 
+void ottieniBanche(char*, char * );
+
 Cliente caricaCliente(char *);
 
 int getConto(char *);
@@ -67,6 +74,10 @@ int creaFileMovimenti(int* , char* );
 void main(int argc, char* argv[]){
 
     char password[30];
+
+    char path[100];
+
+    char buffer[30];
 
     int scelta, disconnesso = 1;
 
@@ -84,7 +95,7 @@ void main(int argc, char* argv[]){
 
             case 1:
 
-                do{
+                //do{
 
                     system("cls");
 
@@ -102,7 +113,7 @@ void main(int argc, char* argv[]){
 
                     }
 
-                }while(strcmp(password, "3PDINFO"));
+                //}while(strcmp(password, "3PDINFO")); //debug inserire nuovamente
 
                 printf("\n\t Login effettuato, benvenuto impiegato_05!\n\t ");
 
@@ -125,6 +136,12 @@ void main(int argc, char* argv[]){
                     switch(scelta){
 
                         case 1:
+                           
+                            ottieniBanche("BANCHE", buffer);
+                            
+                            printf("%s", buffer);
+                            
+                            system("pause");
 
                             //APRI DATABASE 
 
@@ -458,5 +475,33 @@ int creaFileMovimenti(int* numero_conto, char* banca){
         return 0;
 
     }
+
+}
+
+void ottieniBanche(char * path, char * buffer){
+
+    DIR *folder;
+
+    struct dirent *record;
+
+    int cont = 0;
+
+    folder = opendir(path);
+
+    while( (record=readdir(folder)) ){
+
+        if(record->d_namlen>2){
+            
+            strcpy(buffer, record->d_name);
+
+            printf("[%d] %s\n", cont, record->d_name);
+
+            cont++;
+
+        }
+        
+    }
+
+    closedir(folder);
 
 }
