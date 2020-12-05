@@ -67,6 +67,8 @@ int checkInt(void);
 
 int creaFileMovimenti(int* , char* );
 
+int creaFilePath (char * , char * );
+
                                          //      CODICE
 
 void main(int argc, char* argv[]){
@@ -75,9 +77,11 @@ void main(int argc, char* argv[]){
 
     char path[100];
 
-    char buffer[30]="\0";
+    char bancaSelezionata[30]="\0", conferma = '\0';
 
-    int scelta, disconnesso = 1;
+    int scelta, disconnesso = 1, fileok = 0;
+
+    strcpy(path, PATH_SUFFIX);
 
     do{
         
@@ -107,7 +111,7 @@ void main(int argc, char* argv[]){
 
                         printf("\n\t La password immessa e' errata!\n\t ");
 
-                        Sleep(1500);
+                        Sleep(1400);
 
                     }
 
@@ -117,14 +121,20 @@ void main(int argc, char* argv[]){
 
                 disconnesso = 0;
 
-                Sleep(1200);
+                Sleep(1400);
 
                 do{
 
                     system("cls");
 
                     printf("\n\t\t   PORTALE IMPIEGATI");
-                    
+
+                    if(fileok){
+
+                        printf("\n\n\tDatabase bancario aperto: %s", bancaSelezionata);
+
+                    }
+
                     printf("\n\n\tSelezionare operazione da eseguire:\n\n\t\t[1] Apri database bancario\n\t\t[2] Crea nuovo database\n\t\t[0] Disconnetti\n\n\tScelta: ");
 
                     fflush(stdin);
@@ -135,23 +145,38 @@ void main(int argc, char* argv[]){
 
                         case 1:
                            
-                            strcpy(path, PATH_SUFFIX);
+                            if(fileok){
 
-                            ottieniBanca(path, buffer);
+                                printf("\n\tUn database bancario e' gia' caricato, caricarne uno nuovo? [y/n] ");
+
+                                fflush(stdin);
+                                
+                                conferma = getchar();
+
+                                if(toupper(conferma)== 'Y'){
+
+                                    strcpy(bancaSelezionata, "\0");
+
+                                    fileok = 0;
+
+                                }
+
+                            } else{
+
+                                if(ottieniBanca(path, bancaSelezionata)){
+
+                                    fileok = 1;
+
+                                    printf("\tIl database bancario %s e' stato caricato con successo!", bancaSelezionata);
+
+                                    Sleep(1400);
+
+                                }  
                             
-                            //printf("%s", buffer); debug
-
-                            strcat(path, "\\");
-
-                            strcat(path, buffer);
-
-                            fclose(fopen(path, "wb"));
-
-                            system("pause");
-
-                            //APRI DATABASE <<--implementare "database attualmente aperto" con relativo controllo?
+                            }
 
                             break;
+
                         case 2:
 
                             //CREA NUOVO DATABASE
@@ -164,7 +189,9 @@ void main(int argc, char* argv[]){
 
                             printf("\n\tDisconnessione in corso...");
 
-                            Sleep(1500);
+                            Sleep(1400);
+
+                            scelta = -1;
 
                             break;
                         
@@ -172,9 +199,10 @@ void main(int argc, char* argv[]){
 
                             printf("\n\tErrore! Scelta non consentita!");
             
-                            Sleep(1500);
+                            Sleep(1400);
 
                             break;
+
                     }
 
                 }while(!disconnesso);
@@ -191,7 +219,7 @@ void main(int argc, char* argv[]){
 
                 printf("\n\tTermine programma...");
 
-                Sleep(1200);
+                Sleep(1400);
 
                 break;
 
@@ -199,7 +227,7 @@ void main(int argc, char* argv[]){
 
                 printf("\n\tErrore! Scelta non consentita!");
             
-                Sleep(1200);
+                Sleep(1400);
 
                 break;
 
@@ -484,15 +512,21 @@ int creaFileMovimenti(int* numero_conto, char* banca){
 
 }
 
-int ottieniBanca(char * path, char * buffer){
+int ottieniBanca(char * path, char * banca){
+
+                                         //      VARIABILI
 
     DIR *cartella;
 
     struct dirent *record;
 
-    int cont = 0;
+    int trovato = 0, i = 0;
 
-    char conferma, auxBuffer[30]="\0";
+    char conferma;
+
+    char listaBanche [30][30];
+
+                                         //      CODICE
 
     cartella = opendir(path);
 
@@ -500,79 +534,156 @@ int ottieniBanca(char * path, char * buffer){
 
         mkdir(path);
 
+        cartella = opendir(path);
+
     }
-        
-    while( (record=readdir(cartella)) ){
 
-        if(record->d_namlen>2){
+    while( (record = readdir(cartella)) && i<30 ){ //leggo la directory e ottengo la lista delle banche finché il mio array non è pieno
+
+        if(record->d_namlen>2){ //esclude '.' e ".." <-- escludere le cartelle!!!
+
+            if(strncmp(record->d_name,"MOVIMENTI_", 10)){
+
+                strcpy(listaBanche[i], record->d_name);
+
+                i++;
+
+                trovato = 1;
+
+            }
             
-            strcpy(buffer, record->d_name);
-            
-            printf("[%d] %s\n", cont, record->d_name); //<-- ottimizzare, aggiungere dimensione e data creazione (esegui con debugger)
-
-            cont++;
-
         }
     
-    } //implementare scelta del database
+    }
 
     closedir(cartella);
 
-    if(!cont){ //se non è stato trovato almeno un database bancario chiedo all'utente se ne vuole creare uno nuovo
+    system("cls");
 
-        printf("\n\tNon e' stata trovato nessun database bancario, crearne uno nuovo? [y/n] ");
+    printf("\n\t\t\t\t   PORTALE IMPIEGATI\n\t\t\tVISUALIZZAZIONE ELENCO DATABASE BANCARI");
 
-        fflush(stdin);
+    if(i==30){printf("\n\tAttenzione e' stato possibile leggere solamente i primi 30 elementi nella directory. \n\tIl record desiderato potrebbe non essere presente all'interno della lista\n");}
 
-        conferma = getchar();
+    printf("\n");
 
-        if(toupper(conferma) == 'Y'){
-            
-            conferma = '\0';
+    int j;
 
-            do{
+    for (j=0;j<i; j++){ //print a schermo delle banche trovate, l'if permette il print su due colonne
 
-                printf("\n\tInserire il nome del database da creare: ");
+        if((j+2)%2==0){printf("\n\t\t");}else{printf("\t\t");}
 
-                fflush(stdin);
-                
-                gets(auxBuffer);
-
-                if(auxBuffer == " " || auxBuffer == "\n" || auxBuffer == "\0"){ //controllo che non sia stato inserito un nome "vuoto" <<-- verificare che funzioni correttamente
-
-                    printf("\n\tErrore! inserire un valore valido!");
-
-                } else{
-
-                    printf("\n\tIl nome del nuovo database sara' %s, confermare? [y/n] ", auxBuffer);
-
-                    fflush(stdin);
-
-                    conferma = getchar();
-
-                    if(toupper(conferma) == 'Y'){strcpy(buffer, auxBuffer);} 
-
-                }
-                
-
-            }while(toupper(conferma)!='Y'&& toupper(conferma)!='N'); 
-            
-        } else{
-
-            printf("\n\n\tOperazione annullata");
-            
-        }
-
-        if(toupper(conferma)=='Y'){
-
-            //if(creadatabase()){return 1;} else{return 0;} <<-- implementare la funzione
-            
-            printf("\n\n\tChiamata a crea database bancario"); //debug
-
-        }
+        printf("[%2d] %20s", j+1, listaBanche[j]);
 
     }
 
-   // if(cont){return 1;}else{return 0;} //se ho almeno un database (che sia presente a priori o meno) restituisco 1 <-- valutare se me serve o meno questa linea di codice
+    if(trovato){
+
+        printf("\n\n\tImmettere il database bancario da aprire: ");
+
+        int scelta;
+
+        do{
+
+            scelta = checkInt();
+
+            if(scelta <1 || scelta > i){printf("\tErrore! inserire un valore compreso tra 1 e %d: ", i);}
+
+        }while( scelta <1 || scelta > i );
+
+        strcpy(banca,listaBanche[scelta-1]);
+
+        return 1;
+
+    } else{ //se non è stato trovato almeno un database bancario chiedo all'utente se ne vuole creare uno nuovo
+        
+        printf("\n\tNon e' stata trovato nessun database bancario, crearne uno nuovo? [y/n] "); 
+
+        fflush(stdin);
+
+        conferma = getchar();       
+        
+        if(toupper(conferma) == 'Y'){
+            
+            if(creaDatabase(path, banca)){return 1;}else{printf("\n\n\tOperazione annullata");}
+            
+        } else{printf("\n\n\tOperazione annullata");}
+
+    }
+
+    return 0;
+
+}
+
+int creaDatabase(char * path, char * banca){
+
+    char conferma='\0';
+
+    char auxBuffer[30];
+    
+    do{ 
+
+        printf("\n\tInserire il nome del database da creare: ");
+
+        fflush(stdin);
+        
+        gets(auxBuffer);
+
+        if(auxBuffer == " " || auxBuffer == "\n" || auxBuffer == "\0"){ //controllo che non sia stato inserito un nome "vuoto" <<-- verificare che funzioni correttamente
+
+            printf("\n\tErrore! inserire un valore valido!");
+
+        } else{
+
+            printf("\n\tIl nome del nuovo database sara' %s, confermare? [y/n] ", auxBuffer);
+
+            fflush(stdin);
+
+            conferma = getchar();
+
+            if(toupper(conferma) == 'Y'){
+
+                if(creaFilePath(auxBuffer, path)){
+
+                    strcpy(banca, auxBuffer);
+
+                    return 1;
+
+                }
+                
+            } 
+
+        }
+
+    }while(toupper(conferma)!='Y'&& toupper(conferma)!='N'); 
+
+    return 0;
+
+}
+
+int creaFilePath(char * nomefisico, char * path){
+    
+    FILE *flogico;
+
+    char auxBuffer[30];
+
+    strcpy(auxBuffer, path);                // auxBuffer   ==      BANCHE
+
+    strcat(auxBuffer, "\\");                //    ""      ==      BANCHE\
+
+    strcat(auxBuffer, nomefisico);          //    ""      ==      BANCHE\<nomefisico>
+
+    flogico = fopen(auxBuffer, "wb");
+
+    if(flogico != NULL){
+        
+        fclose(flogico);
+
+        return 1;
+
+    } else{
+
+        return 0;
+
+    }
 
 }
