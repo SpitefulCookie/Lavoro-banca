@@ -6,7 +6,7 @@
 #include <time.h>
 #include <dirent.h>
 
-#define PATH_SUFFIX "BANCHE"
+#define PATH_SUFFIX "BANCHE\\"
 
 
                                          //      TIPI
@@ -57,7 +57,7 @@ typedef struct Movimenti {
 
 //void datasystem(int *, int *, int *);
 
-int ottieniBanca(char*, char * );
+int ottieniBanca(char*, char*, char * );
 
 Cliente caricaCliente(char *);
 
@@ -77,14 +77,14 @@ void main(int argc, char* argv[]){
 
     char path[100];
 
+    char pathMovimenti[100];
+
     char bancaSelezionata[30]="\0", conferma = '\0';
 
     int scelta, disconnesso = 1, fileok = 0;
 
-    strcpy(path, PATH_SUFFIX);
-
     do{
-        
+
         system("cls");
 
         printf("\n\t\t   SISTEMA BANCARIO\n\n\tSelezionare il portale a cui accedere:\n\n\t\t[1] Portale impiegati\n\t\t[2] Portale Clienti\n\t\t[0] Termine programma\n\n\tScelta: ");
@@ -120,6 +120,8 @@ void main(int argc, char* argv[]){
                 printf("\n\t Login effettuato, benvenuto impiegato_05!\n\t ");
 
                 disconnesso = 0;
+
+                strcpy(path, PATH_SUFFIX);
 
                 Sleep(1400);
 
@@ -157,13 +159,13 @@ void main(int argc, char* argv[]){
 
                                     strcpy(bancaSelezionata, "\0");
 
-                                    fileok = 0;
+                                    fileok = 0; 
 
                                 }
 
                             } else{
 
-                                if(ottieniBanca(path, bancaSelezionata)){
+                                if(ottieniBanca(path, pathMovimenti, bancaSelezionata)){
 
                                     fileok = 1;
 
@@ -180,6 +182,38 @@ void main(int argc, char* argv[]){
                         case 2:
 
                             //CREA NUOVO DATABASE
+
+                            if(fileok){
+
+                                printf("\n\tUn database bancario e' gia' stato caricato, crearne uno nuovo? [y/n] ");
+
+                                fflush(stdin);
+                                
+                                conferma = getchar();
+
+                                if(toupper(conferma)== 'Y'){
+
+                                    strcpy(bancaSelezionata, "\0");
+
+                                    fileok = 0; //far si che parta direttamente la creazione di un nuovo database
+
+                                }
+
+                            } else{
+                                                              
+                                mkdir(path); //<- controllare meglio la logica quando la cartella e gia presente, possono esserci dei comportamenti anomali. se ci sono usare puntatore a directory
+                                                            
+                                if(creaDatabase(path, pathMovimenti, bancaSelezionata)){
+
+                                    fileok = 1;
+
+                                    printf("\tIl database bancario %s e' stato creato con successo!", bancaSelezionata);
+
+                                    Sleep(1400);
+
+                                }
+
+                            }
 
                             break;
 
@@ -233,10 +267,9 @@ void main(int argc, char* argv[]){
 
         }
 
-    }while(scelta); //sistemare "Disconnessione"
+    }while(scelta); 
    
 }
-
 
 /*
 void datasystem(int *g, int *m, int *a){
@@ -258,8 +291,7 @@ void datasystem(int *g, int *m, int *a){
 }
 */
 
-
-int getConto(char * banca){
+int getConto(char * banca){ //posso passare il path al posto di banca
 
     FILE * flogico;
 
@@ -512,7 +544,7 @@ int creaFileMovimenti(int* numero_conto, char* banca){
 
 }
 
-int ottieniBanca(char * path, char * banca){
+int ottieniBanca(char * path, char * pathMovimenti, char * banca){
 
                                          //      VARIABILI
 
@@ -604,7 +636,7 @@ int ottieniBanca(char * path, char * banca){
         
         if(toupper(conferma) == 'Y'){
             
-            if(creaDatabase(path, banca)){return 1;}else{printf("\n\n\tOperazione annullata");}
+            if(creaDatabase(path, pathMovimenti, banca)){return 1;}else{printf("\n\n\tOperazione annullata");}
             
         } else{printf("\n\n\tOperazione annullata");}
 
@@ -614,11 +646,11 @@ int ottieniBanca(char * path, char * banca){
 
 }
 
-int creaDatabase(char * path, char * banca){
+int creaDatabase(char * path, char* pathMovimenti, char * banca){
 
-    char conferma='\0';
+    char conferma = '\0';
 
-    char auxBuffer[30];
+    char buffer[30];
     
     do{ 
 
@@ -626,15 +658,15 @@ int creaDatabase(char * path, char * banca){
 
         fflush(stdin);
         
-        gets(auxBuffer);
+        gets(buffer);
 
-        if(auxBuffer == " " || auxBuffer == "\n" || auxBuffer == "\0"){ //controllo che non sia stato inserito un nome "vuoto" <<-- verificare che funzioni correttamente
+        if(buffer == " " || buffer == "\n" || buffer == "\0"){ //controllo che non sia stato inserito un nome "vuoto" <<-- verificare che funzioni correttamente
 
             printf("\n\tErrore! inserire un valore valido!");
 
         } else{
 
-            printf("\n\tIl nome del nuovo database sara' %s, confermare? [y/n] ", auxBuffer);
+            printf("\n\tIl nome del nuovo database sara' %s, confermare? [y/n] ", buffer);
 
             fflush(stdin);
 
@@ -642,9 +674,17 @@ int creaDatabase(char * path, char * banca){
 
             if(toupper(conferma) == 'Y'){
 
-                if(creaFilePath(auxBuffer, path)){
+                if(creaFilePath(buffer, path)){
 
-                    strcpy(banca, auxBuffer);
+                    strcpy(banca, buffer);          //  Copio il nome del database all'interno della variabile "bancaSelezionata" nel main
+
+                    strcpy(buffer, path);           //path::    BANCHE\\  <- sovrascrivo buffer e gli assegno il mio path (BANCHE\\)
+
+                    strcat(buffer, "MOVIMENTI_");   //path::    BANCHE\\MOVIMENTI_
+
+                    strcat(buffer, banca);          //path::    BANCHE\\MOVIMENTI_<banca>
+
+                    if(mkdir(buffer)){strcpy(pathMovimenti, buffer);}   //Creo una directory che conterrà tutti i miei file movimenti
 
                     return 1;
 
@@ -664,15 +704,13 @@ int creaFilePath(char * nomefisico, char * path){
     
     FILE *flogico;
 
-    char auxBuffer[30];
+    char buffer[30];
 
-    strcpy(auxBuffer, path);                // auxBuffer   ==      BANCHE
+    strcpy(buffer, path);            
 
-    strcat(auxBuffer, "\\");                //    ""      ==      BANCHE\
+    strcat(buffer, nomefisico);      
 
-    strcat(auxBuffer, nomefisico);          //    ""      ==      BANCHE\<nomefisico>
-
-    flogico = fopen(auxBuffer, "wb");
+    flogico = fopen(buffer, "wb");
 
     if(flogico != NULL){
         
