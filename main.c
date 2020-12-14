@@ -633,7 +633,7 @@ int ottieniBanca(char * path, char * pathMovimenti, char * banca){ //inserire pr
 
     while( (record = readdir(cartella)) && i<30 ){ //leggo la directory e ottengo la lista delle banche finché il mio array non e' pieno
 
-        if(record->d_namlen>2){ //esclude '.' e ".." <-- escludere le cartelle!!!
+        if(strcmp(record->d_name,".")&& strcmp(record->d_name,"..")){ //esclude '.' e ".." 
 
             if(strncmp(record->d_name,"MOVIMENTI_", 10)){
 
