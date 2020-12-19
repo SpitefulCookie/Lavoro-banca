@@ -68,9 +68,19 @@ int checkInt(void);
 
 int creaFileMovimenti(char*, int , char* );
 
+int creaArchivio(char*, char *, char *);
+
 int creaFilePath (char * , char * );
 
 int esisteFile(char * );
+
+int scriviFILE(char*, Cliente);
+
+void visualizzaRecordStruct(Cliente);
+
+int visualizzaArchivio(char *);
+
+void menuRicerca(char *);
 
                                          //      CODICE
 
@@ -88,13 +98,13 @@ void main(int argc, char* argv[]){
 
     strcpy(pathBanca, PATH_SUFFIX);
 
-    mkdir(pathBanca); //Creo una directory "BANCHE" dove salverò tutti i database bancari
+    mkdir(pathBanca); //Creo una directory "BANCHE" dove salverò tutti gli archivi bancari
     
     do{
 
         system("cls");
 
-        printf("\n\t\t   SISTEMA BANCARIO\n\n\tSelezionare il portale a cui accedere:\n\n\t\t[1] Portale impiegati\n\t\t[2] Portale Clienti\n\t\t[0] Termine programma\n\n\tScelta: ");
+        printf("\n\t\t   SISTEMA BANCARIO\n\n\tSelezionare il portale a cui accedere:\n\n\t\t[1] Portale Impiegati\n\t\t[2] Portale Clienti\n\t\t[0] Termine programma\n\n\tScelta: ");
 
         fflush(stdin);
 
@@ -118,7 +128,7 @@ void main(int argc, char* argv[]){
 
                         printf("\n\t La password immessa e' errata!\n\t ");
 
-                        Sleep(1400);
+                        //Sleep(1400); //debug inserire nuovamente
 
                     }
 
@@ -128,7 +138,7 @@ void main(int argc, char* argv[]){
 
                 disconnesso = 0;
 
-                Sleep(1400);
+                //Sleep(1400); //debug inserire nuovamente
 
                 do{
 
@@ -138,13 +148,14 @@ void main(int argc, char* argv[]){
 
                     if(fileok){
 
-                        printf("\n\tDatabase bancario aperto: %s", bancaSelezionata);
-                        printf("\n\tPath del database bancario: %s", pathBanca); //debug
-                        printf("\n\tPath dei movimenti bancari: %s", pathMovimenti); //debug
+                        printf("\n\tArchivio bancario aperto: %s", bancaSelezionata);
+                        printf("\n\tPath dell'archivio bancario: %s", pathBanca); //debug
+                        printf("\n\tPath dei movimenti bancari:  %s", pathMovimenti); //debug
+                         printf("\n\t_________________________________\n");
 
                     }
 
-                    printf("\n\tSelezionare operazione da eseguire:\n\n\t\t[1] Apri database bancario\n\t\t[2] Crea nuovo database\n\t\t[3] Inserisci nuovo cliente nel database\n\t\t[0] Disconnetti\n\n\tScelta: ");
+                    printf("\n\tSelezionare operazione da eseguire:\n\n\t\t[1] Apri archivio bancario\n\t\t[2] Crea nuovo archivio\n\t\t[3] Inserisci nuovo cliente nell'archivio\n\t\t[4] Visualizza i record nell'archivio\n\t\t[5] Ricerca cliente nell'archivio\n\t\t[0] Disconnetti\n\n\tScelta: ");
 
                     fflush(stdin);
 
@@ -156,13 +167,13 @@ void main(int argc, char* argv[]){
                            
                             if(fileok){
 
-                                printf("\n\tUn database bancario e' gia' caricato, caricarne uno nuovo? [y/n] ");
+                                printf("\n\tUn archivio bancario e' gia' caricato, caricarne uno nuovo? [y/n] ");
 
                                 fflush(stdin);
                                 
                                 conferma = getchar();
 
-                                if(toupper(conferma)== 'Y'){
+                                if(toupper(conferma) == 'Y'){
 
                                     strcpy(bancaSelezionata, "\0");
 
@@ -184,7 +195,7 @@ void main(int argc, char* argv[]){
 
                                 fileok = 1;
 
-                                printf("\tIl database bancario \"%s\" e' stato caricato con successo!", bancaSelezionata);
+                                printf("\tL' archivio bancario \"%s\" e' stato caricato con successo!", bancaSelezionata);
 
                                 Sleep(1600);
 
@@ -192,11 +203,11 @@ void main(int argc, char* argv[]){
 
                             break;
 
-                        case 2: //CREA NUOVO DATABASE
+                        case 2: //CREA NUOVO ARCHIVIO
 
                             if(fileok){
 
-                                printf("\n\tUn database bancario e' gia' stato caricato, crearne uno nuovo? [y/n] ");
+                                printf("\n\tUn archivio bancario e' gia' stato caricato, crearne uno nuovo? [y/n] ");
 
                                 fflush(stdin);
                                 
@@ -214,23 +225,23 @@ void main(int argc, char* argv[]){
 
                                 } else{
 
-                                    break; //se non voglio creare un nuovo database interrompo il case
+                                    break; //se non voglio creare un nuovo archivio interrompo il case
 
                                 }
 
                             } 
                                                                                                                           
-                            if(creaDatabase(pathBanca, pathMovimenti, bancaSelezionata)){
+                            if(creaArchivio(pathBanca, pathMovimenti, bancaSelezionata)){
 
                                 fileok = 1;
 
-                                printf("\tIl database bancario \"%s\" e' stato creato con successo!", bancaSelezionata);
+                                printf("\tL'archivio bancario \"%s\" e' stato creato con successo!", bancaSelezionata);
 
                             } else{
 
-                                printf("\tNon e' stato possibile creare il database!");
+                                printf("\tNon e' stato possibile creare l'archivio!");
 
-                                strcpy(bancaSelezionata, "\0"); //reimposto bancaSelezionata a valore nullo (il suo stato viene modificato nella funzione creaDatabase)
+                                strcpy(bancaSelezionata, "\0"); //reimposto bancaSelezionata a valore nullo (il suo stato viene modificato nella funzione creaArchivio)
 
                             }
 
@@ -256,11 +267,43 @@ void main(int argc, char* argv[]){
 
                             } else{
 
-                                printf("\n\tErrore! e' necessario aprire o creare un database prima di eseguire questa funzione!\n\t");
+                                printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!\n\t");
 
                             }
 
                             system("pause");
+
+                            break;
+
+                        case 4:
+
+                            if(fileok){
+
+                                if(!visualizzaArchivio(pathBanca)){printf("\n\tL'archivio selezionato non contiene nessun record");}
+
+                                printf("\n\t");
+
+                            }else{
+
+                                printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!\n\t");
+
+                            }
+
+                            system("pause");
+
+                            break;
+
+                        case 5:
+
+                            if (fileok){
+
+                                menuRicerca(pathBanca);
+                    
+                            } else{
+
+                                printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!\n\t");
+                                
+                            }
 
                             break;
 
@@ -346,9 +389,11 @@ int getConto(char * path){ // ritorna un integer > 0 no indice!
 
     int numero_conto;
 
-    flogico = fopen(path, "ab");
+    flogico = fopen(path, "rb");
 
-    if(!ftell(flogico)){
+    fseek(flogico, 0, SEEK_END);
+
+    if(!ftell(flogico)){ //se 0 (ovvero non ho alcun record nell'archvio) ritorno 1
         
         fclose(flogico);
 
@@ -374,12 +419,12 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){
     
                                              //      VARIABILI
     
-    Cliente cliente = {};
+    Cliente cliente;
 
     int controllo = 0;
 
                                              //       CODICE
-
+    
     cliente.numero_conto = getConto(path);
 
     if(creaFileMovimenti(pathMovimenti, cliente.numero_conto, banca)){ //per far si che funzioni il mio pathMovimenti deve essere BANCHE\\MOVIMENTI_<banca> !!
@@ -390,7 +435,7 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){
                 
         fflush(stdin);
 
-        cliente.prelievo_max = checkInt();
+        scanf("%d", &cliente.prelievo_max);
 
         printf("\n\tInserisci il cognome del cliente: ");
 
@@ -527,14 +572,14 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){
             }
 
         }while (!stricmp(cliente.password, "") || !stricmp(cliente.password, " "));
-
+        
         //Inserimento cliente su file
 
         //printf("\n\npath prima di scriviFile: %s\n\n", path); //debug
         
-        if(scriviFILE(path, cliente)){return 1;} else{return 0;}
+        if(scriviFILE(path, cliente)){return 1;} 
 
-    }
+    }else{return 0;}
 
 }
 
@@ -653,7 +698,7 @@ int ottieniBanca(char * path, char * pathMovimenti, char * banca){ //inserire pr
 
     system("cls");
 
-    printf("\n\t\t\t\t   PORTALE IMPIEGATI\n\t\t\tVISUALIZZAZIONE ELENCO DATABASE BANCARI");
+    printf("\n\t\t\t\t   PORTALE IMPIEGATI\n\t\t\tVISUALIZZAZIONE ELENCO ARCHIVI BANCARI");
 
     if(i==30){printf("\n\tAttenzione e' stato possibile leggere solamente i primi 30 elementi nella directory. \n\tIl record desiderato potrebbe non essere presente all'interno della lista\n");}
 
@@ -671,7 +716,7 @@ int ottieniBanca(char * path, char * pathMovimenti, char * banca){ //inserire pr
 
     if(trovato){
 
-        printf("\n\n\tImmettere il database bancario da aprire: ");
+        printf("\n\n\tImmettere l'archivio bancario da aprire: ");
 
         int scelta;
 
@@ -699,9 +744,9 @@ int ottieniBanca(char * path, char * pathMovimenti, char * banca){ //inserire pr
 
         return 1;
 
-    } else{ //se non e' stato trovato almeno un database bancario chiedo all'utente se ne vuole creare uno nuovo
+    } else{ //se non e' stato trovato almeno un archivio bancario chiedo all'utente se ne vuole creare uno nuovo
         
-        printf("\n\tNon e' stata trovato nessun database bancario, crearne uno nuovo? [y/n] "); 
+        printf("\n\tNon e' stata trovato nessun archivio bancario, crearne uno nuovo? [y/n] "); 
 
         fflush(stdin);
 
@@ -709,7 +754,7 @@ int ottieniBanca(char * path, char * pathMovimenti, char * banca){ //inserire pr
         
         if(toupper(conferma) == 'Y'){
             
-            if(creaDatabase(path, pathMovimenti, banca)){return 1;}else{printf("\n\n\tOperazione annullata");}
+            if(creaArchivio(path, pathMovimenti, banca)){return 1;}else{printf("\n\n\tOperazione annullata");}
             
         } else{printf("\n\n\tOperazione annullata");}
 
@@ -719,7 +764,7 @@ int ottieniBanca(char * path, char * pathMovimenti, char * banca){ //inserire pr
 
 }
 
-int creaDatabase(char * path, char* pathMovimenti, char * banca){
+int creaArchivio(char * path, char* pathMovimenti, char * banca){
 
     char conferma = '\0';
 
@@ -729,9 +774,9 @@ int creaDatabase(char * path, char* pathMovimenti, char * banca){
 
         system("cls");
 
-        printf("\n\t\t   CREAZIONE DATABASE BANCARIO\n");
+        printf("\n\t\t   CREAZIONE ARCHIVIO BANCARIO\n");
 
-        printf("\n\tInserire il nome del database da creare: "); //bisognerebbe forzare una lunghezza di almeno 3 caratteri
+        printf("\n\tInserire il nome dell'archivio da creare: "); //bisognerebbe forzare una lunghezza di almeno 3 caratteri
 
         fflush(stdin);
         
@@ -743,7 +788,7 @@ int creaDatabase(char * path, char* pathMovimenti, char * banca){
 
         } else{
 
-            printf("\tIl nome del nuovo database sara' \"%s\", confermare? [y/n] ", buffer);
+            printf("\tIl nome del nuovo archivio sara' \"%s\", confermare? [y/n] ", buffer);
 
             fflush(stdin);
 
@@ -753,7 +798,7 @@ int creaDatabase(char * path, char* pathMovimenti, char * banca){
 
                 if(creaFilePath(buffer, path)){ 
 
-                    strcpy(banca, buffer);          //  Copio il nome del database all'interno della variabile "bancaSelezionata" nel main
+                    strcpy(banca, buffer);          //  Copio il nome dell'archivio all'interno della variabile "bancaSelezionata" nel main
 
                     strcat(path, banca);
 
@@ -850,10 +895,148 @@ int scriviFILE(char * path, Cliente nuovoCliente){
 
     flogico = fopen(path, "ab");
 
-    fwrite(&path, sizeof (Cliente), 1, flogico);
+    fwrite(&nuovoCliente, sizeof(Cliente), 1, flogico);
 
     fclose(flogico);
 
     return 1;
+
+}
+
+void visualizzaRecordStruct(Cliente id){
+
+    printf("\n\tNumero di conto: %d\n", id.numero_conto);
+    
+    printf("\n\tCognome: %s", id.cognome);
+
+    printf("\n\tNome: %s", id.nome);
+
+    printf("\n\tData di nascita: %d/%d/%d", id.data_nascita.gg, id.data_nascita.mm, id.data_nascita.aaaa);
+
+    printf("\n\tSesso: %c\n", id.sesso);
+
+    printf("\n\tUsername: %s", id.username);
+
+    printf("\n\tPassword: %s", id.password);
+
+    printf("\n\tSaldo sul conto %d: %d eur", id.numero_conto, id.saldo);
+    
+    printf("\n\tPrelievo massimo eseguibile: %d eur\n", id.prelievo_max);
+
+    printf("\n\t _______________________\n");
+
+}
+
+void visualizzaRecordPosizione(long pos){
+
+    // accesso diretto
+
+}
+
+int visualizzaArchivio(char * path){
+
+    FILE * flogico;
+
+    Cliente cliente_letto;
+
+    int haRecord = 0;
+
+    system("cls");
+
+    printf("\n\t\t   VISUALIZZAZIONE ARCHIVIO BANCARIO\n");
+    
+    flogico = fopen(path, "rb");
+
+    fread(&cliente_letto, sizeof(Cliente), 1, flogico);
+
+    while(!feof(flogico)){
+
+        haRecord = 1;
+
+        visualizzaRecordStruct(cliente_letto);
+
+        fread(&cliente_letto, sizeof(Cliente), 1, flogico);
+
+    }
+
+    fclose(flogico);
+
+    return haRecord;
+
+}
+
+void menuRicerca(char * pathBanca){
+
+    int scelta;
+    
+    do{
+
+        system("cls");
+
+        printf("\n\t\t   RICERCA CLIENTE ARCHIVIO BANCARIO\n");
+
+        printf("\n\tSelezionare criterio di ricerca:\n\n\t\t[1] Ricerca per nominativo\n\t\t[2] Ricerca per data di nascita\n\t\t[3] Ricerca per numero di conto\n\t\t[4] Ricerca per username\n\t\t[0] Indietro\n\n\tScelta: ");
+
+        fflush(stdin);
+
+        scelta = checkInt();
+
+        switch(scelta){
+
+            case 1: //ricerca per nominativo
+
+                    //
+                    printf("Ricerca nominativo!");
+
+                    Sleep(1400);
+
+                break;
+
+            case 2: //rifcerca per data di nascita
+
+                    //
+
+                    printf("Ricerca data!");
+
+                    Sleep(1400);
+
+                break;
+
+            case 3: //ricerca per numero del conto
+
+                    //
+
+                    printf("Ricerca num conto!");
+
+                    Sleep(1400);
+
+                break;
+
+            case 4: //ricerca per username
+
+                    //crea funzione a parte che restituisca LONG cosicche' possa essere utilizzata pure nel login utente!!
+
+                    printf("Ricerca username!");
+
+                    Sleep(1400);
+
+                break;
+
+            default:
+
+                if(scelta){
+
+                    printf("\n\tErrore! Scelta non consentita!");
+
+                }
+                
+                Sleep(1400);
+
+                break; 
+
+        }
+
+    }while(scelta);
+    
 
 }
