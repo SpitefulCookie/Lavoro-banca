@@ -82,6 +82,8 @@ int visualizzaArchivio(char *);
 
 void menuRicerca(char *);
 
+int visualizzaRecordPosizione(char * , long );
+
                                          //      CODICE
 
 void main(int argc, char* argv[]){
@@ -302,7 +304,7 @@ void main(int argc, char* argv[]){
                             } else{
 
                                 printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!\n\t");
-                                
+
                             }
 
                             break;
@@ -430,12 +432,6 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){
     if(creaFileMovimenti(pathMovimenti, cliente.numero_conto, banca)){ //per far si che funzioni il mio pathMovimenti deve essere BANCHE\\MOVIMENTI_<banca> !!
 
         cliente.saldo = 0;
-
-        printf("\n\tInserisci la quantita' massima di denaro prelevabile: ");
-                
-        fflush(stdin);
-
-        scanf("%d", &cliente.prelievo_max);
 
         printf("\n\tInserisci il cognome del cliente: ");
 
@@ -572,10 +568,12 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){
             }
 
         }while (!stricmp(cliente.password, "") || !stricmp(cliente.password, " "));
-        
-        //Inserimento cliente su file
 
-        //printf("\n\npath prima di scriviFile: %s\n\n", path); //debug
+        printf("\n\tInserisci la quantita' massima di denaro prelevabile: ");
+                
+        fflush(stdin);
+
+        scanf("%d", &cliente.prelievo_max);
         
         if(scriviFILE(path, cliente)){return 1;} 
 
@@ -927,9 +925,27 @@ void visualizzaRecordStruct(Cliente id){
 
 }
 
-void visualizzaRecordPosizione(long pos){
+int visualizzaRecordPosizione(char * pathBanca, long pos){
 
-    // accesso diretto
+    FILE * flogico;
+
+    Cliente client_letto;
+
+    flogico = fopen(pathBanca, "rb");
+
+    if(flogico!=NULL){
+
+        fseek(flogico, pos, SEEK_SET);
+
+        fread(&client_letto, sizeof(Cliente), 1, flogico);
+
+        visualizzaRecordStruct(client_letto);
+
+        fclose(flogico);
+
+        return 1;
+
+    } else {return 0;}
 
 }
 
