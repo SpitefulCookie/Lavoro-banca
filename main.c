@@ -84,6 +84,16 @@ void menuRicerca(char *);
 
 int visualizzaRecordPosizione(char * , long );
 
+void menuRicerca(char * );
+
+long ricercaUsername(char * , char * );
+
+long ricercaNominativo(char * , char * , char * );
+
+long ricercaData(char * , Data );
+
+long ricercaNumeroConto(char * pathBanca, int numeroConto);
+
                                          //      CODICE
 
 void main(int argc, char* argv[]){
@@ -297,15 +307,7 @@ void main(int argc, char* argv[]){
 
                         case 5:
 
-                            if (fileok){
-
-                                menuRicerca(pathBanca);
-                    
-                            } else{
-
-                                printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!\n\t");
-
-                            }
+                            if (fileok){menuRicerca(pathBanca);} else{printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!\n\t");}
 
                             break;
 
@@ -431,8 +433,14 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){
 
     if(creaFileMovimenti(pathMovimenti, cliente.numero_conto, banca)){ //per far si che funzioni il mio pathMovimenti deve essere BANCHE\\MOVIMENTI_<banca> !!
 
+        system("cls");
+
+        printf("\n\t\t   INSERIMENTO CLIENTE\n");
+        
         cliente.saldo = 0;
 
+        printf("\n\tDATI ANAGRAFICI:\n");
+        
         printf("\n\tInserisci il cognome del cliente: ");
 
         do{
@@ -537,6 +545,8 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){
 
         controllo = 1;   
 
+        printf("\n\tCREDENZIALI D'ACCESSO:\n");
+        
         printf("\n\tInserisci l'username del cliente: ");
 
         do{
@@ -553,7 +563,7 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){
 
         }while (!stricmp(cliente.username, "") || !stricmp(cliente.username, " "));
 
-        printf("\n\tInserisci la password del cliente: ");
+        printf("\tInserisci la password del cliente: ");
 
         do{
             
@@ -568,6 +578,8 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){
             }
 
         }while (!stricmp(cliente.password, "") || !stricmp(cliente.password, " "));
+
+        printf("\n\tINFORMAZIONI FINANZIARIE:\n");
 
         printf("\n\tInserisci la quantita' massima di denaro prelevabile: ");
                 
@@ -903,7 +915,7 @@ int scriviFILE(char * path, Cliente nuovoCliente){
 
 void visualizzaRecordStruct(Cliente id){
 
-    printf("\n\tNumero di conto: %d\n", id.numero_conto);
+    printf("\n\tDATI ANAGRAFICI:\n");
     
     printf("\n\tCognome: %s", id.cognome);
 
@@ -913,11 +925,17 @@ void visualizzaRecordStruct(Cliente id){
 
     printf("\n\tSesso: %c\n", id.sesso);
 
+    printf("\n\tCREDENZIALI D'ACCESSO:\n");
+    
     printf("\n\tUsername: %s", id.username);
 
-    printf("\n\tPassword: %s", id.password);
+    printf("\n\tPassword: %s\n", id.password);
 
-    printf("\n\tSaldo sul conto %d: %d eur", id.numero_conto, id.saldo);
+    printf("\n\tINFORMAZIONI FINANZIARIE:\n");
+
+    printf("\n\tNumero di conto: %d", id.numero_conto);
+    
+    printf("\n\tSaldo sul conto: %d eur",  id.saldo);
     
     printf("\n\tPrelievo massimo eseguibile: %d eur\n", id.prelievo_max);
 
@@ -983,9 +1001,21 @@ int visualizzaArchivio(char * path){
 
 void menuRicerca(char * pathBanca){
 
-    int scelta;
+    int scelta, numeroconto;
+
+    long pos;
+
+    char nome[50];
+
+    char cognome[50];
+
+    char username[50];
+
+    Data data;
     
     do{
+
+        pos = -1;
 
         system("cls");
 
@@ -1000,59 +1030,234 @@ void menuRicerca(char * pathBanca){
         switch(scelta){
 
             case 1: //ricerca per nominativo
+                    
+                system("cls");
 
-                    //
-                    printf("Ricerca nominativo!");
+                printf("\n\t\t   RICERCA CLIENTE PER NOMINATIVO\n");
 
-                    Sleep(1400);
+                printf("\n\tInserire il nome del cliente da ricercare: ");
+
+                fflush(stdin);
+                
+                gets(nome);
+
+                printf("\tInserire il cognome del cliente da ricercare: ");
+
+                fflush(stdin);
+                
+                gets(cognome);
+               
+                pos = ricercaNominativo(pathBanca, nome, cognome);
+
+                if (pos != -1){visualizzaRecordPosizione(pathBanca, pos);} else{printf("\n\tNon e' stato trovato alcun record che corrispondeva ai criteri desiderati");}
 
                 break;
 
             case 2: //rifcerca per data di nascita
+                    
+                system("cls");
 
-                    //
+                printf("\n\t\t   RICERCA CLIENTE PER DATA DI NASCITA\n");
 
-                    printf("Ricerca data!");
+                printf("\n\tInserire il giorno di nascita del cliente da ricercare: ");
 
-                    Sleep(1400);
+                data.gg = checkInt();
+
+                printf("\tInserire il mese di nascita del cliente da ricercare: ");
+
+                data.mm = checkInt();
+
+                printf("\tInserire l'anno di nascita del cliente da ricercare: ");
+
+                data.aaaa = checkInt();
+
+                pos = ricercaData(pathBanca, data);
+
+                if (pos != -1){visualizzaRecordPosizione(pathBanca, pos);} else{printf("\n\tNon e' stato trovato alcun record che corrispondeva ai criteri desiderati");}
 
                 break;
 
             case 3: //ricerca per numero del conto
+                    
+                system("cls");
 
-                    //
+                printf("\n\t\t   RICERCA CLIENTE PER NUMERO DI CONTO\n");
 
-                    printf("Ricerca num conto!");
+                printf("\n\tInserire il numero di conto del cliente da ricercare: ");
 
-                    Sleep(1400);
+                numeroconto = checkInt();
+                
+                pos = ricercaNumeroConto(pathBanca, numeroconto);
+
+                if (pos != -1){visualizzaRecordPosizione(pathBanca, pos);} else{printf("\n\tNon e' stato trovato alcun record che corrispondeva ai criteri desiderati");}
+
+                Sleep(1400);
 
                 break;
 
             case 4: //ricerca per username
+                    
+                system("cls");
 
-                    //crea funzione a parte che restituisca LONG cosicche' possa essere utilizzata pure nel login utente!!
+                printf("\n\t\t   RICERCA CLIENTE PER USERNAME\n");
 
-                    printf("Ricerca username!");
+                printf("\n\tInserire l'username del cliente da ricercare: ");
 
-                    Sleep(1400);
+                fflush(stdin);
+                
+                gets(username);
+
+                pos = ricercaUsername(pathBanca, username);
+
+                if(pos != -1){visualizzaRecordPosizione(pathBanca, pos);} else{printf("\n\tNon e' stato trovato alcun record che corrispondeva ai criteri desiderati");}
 
                 break;
 
             default:
 
-                if(scelta){
-
-                    printf("\n\tErrore! Scelta non consentita!");
-
-                }
+                if(scelta){printf("\n\tErrore! Scelta non consentita!");}
                 
-                Sleep(1400);
-
                 break; 
 
         }
 
-    }while(scelta);
+        if(scelta){ //selezione puramente per motivi di formattazione 
+
+            printf("\n\t");
+
+            system("pause");
+
+        } 
+
+    } while(scelta);
     
+}
+
+long ricercaUsername(char * pathBanca, char * username){
+
+    FILE * flogico;
+
+    Cliente cliente_letto;
+
+    long pos =- 1;
+
+    flogico = fopen(pathBanca, "rb");
+
+    fread(&cliente_letto, sizeof(Cliente), 1, flogico);
+
+    while(!feof(flogico)){
+
+        if(!stricmp(cliente_letto.username, username)){
+
+            pos = ftell(flogico) - sizeof(Cliente); 
+
+            break;
+
+        } else {fread(&cliente_letto,sizeof(Cliente), 1, flogico);}
+
+    }
+
+    fclose(flogico);
+
+    return pos;
+
+}
+
+long ricercaNominativo(char * pathBanca, char * nome, char * cognome){
+
+    FILE * flogico;
+
+    Cliente cliente_letto;
+
+    long pos =- 1;
+
+    flogico = fopen(pathBanca, "rb");
+
+    fread(&cliente_letto, sizeof(Cliente), 1, flogico);
+
+    while(!feof(flogico)){
+
+        if(!stricmp(cliente_letto.nome, nome)&&!stricmp(cliente_letto.cognome, cognome)){
+
+            pos = ftell(flogico) - sizeof(Cliente); 
+
+            break;
+
+        } else {fread(&cliente_letto,sizeof(Cliente), 1, flogico);}
+
+    }
+
+    fclose(flogico);
+
+    return pos;
+
+}
+
+long ricercaData(char * pathBanca, Data data){
+
+    FILE * flogico;
+
+    Cliente cliente_letto;
+
+    long pos = -1;
+
+    flogico = fopen(pathBanca, "rb");
+        
+    fread(&cliente_letto, sizeof(Cliente), 1, flogico);
+
+    while(!feof(flogico)){
+
+        if(cliente_letto.data_nascita.gg==data.gg && cliente_letto.data_nascita.mm==data.mm && cliente_letto.data_nascita.aaaa==data.aaaa){
+
+            pos = ftell(flogico) - sizeof(Cliente);
+
+            break;
+
+        } else{fread(&cliente_letto, sizeof(Cliente), 1, flogico);}
+
+    }
+
+    fclose(flogico);
+
+    return pos;
+
+}
+
+long ricercaNumeroConto(char * pathBanca, int numeroConto){
+
+    FILE * flogico;
+
+    Cliente cliente_letto;
+
+    long pos = -1;
+
+    flogico = fopen(pathBanca, "rb");
+
+    fread(&cliente_letto, sizeof(Cliente), 1, flogico);
+
+    while(!feof(flogico)){
+
+        if(cliente_letto.numero_conto == numeroConto){
+
+            pos = ftell(flogico) - sizeof(Cliente);
+
+            break;
+
+        } else{
+
+            if(cliente_letto.numero_conto>numeroConto){break;} else{fread(&cliente_letto, sizeof(Cliente), 1, flogico);}
+            
+            /* 
+            * poiché in quest'ambito i numeri di conto sono ad incrementi di 1, e soprattutto sono in ordine crescente, non appena andro' 
+            * a valutare un numero di conto superiore a quello desiderato posso interrompere il ciclo
+            */
+
+        }
+
+    }
+
+    fclose(flogico);
+
+    return pos;  
 
 }
