@@ -9,7 +9,6 @@
 #define PATH_SUFFIX "BANCHE\\"
 #define PASSWORD "3PDINFO"
 
-
                                          //      TIPI
 
 typedef struct Data {
@@ -46,7 +45,7 @@ typedef struct Cliente {
 
 typedef struct Movimenti {
 
-    char tipo[15]; 
+    char tipo[15]; // "prelievo" / "versamento"
 
     Data data_movimento;
 
@@ -56,13 +55,13 @@ typedef struct Movimenti {
 
                                          //      PROTOTIPI
 
-//void datasystem(int *, int *, int *);
+void datasystem(int *, int *, int *);
 
-int ottieniBanca(char*, char*, char * );
+int getBanca(char*, char*, char * );
 
 int caricaCliente(char *, char *, char *);
 
-int getConto(char *);
+int getNextConto(char *);
 
 int checkInt(void);
 
@@ -74,7 +73,7 @@ int creaFilePath (char * , char * );
 
 int esisteFile(char * );
 
-int scriviFILE(char*, Cliente);
+int scriviClienteFILE(char*, Cliente);
 
 void visualizzaRecordStruct(Cliente);
 
@@ -92,7 +91,11 @@ long ricercaNominativo(char * , char * , char * );
 
 long ricercaData(char * , Data );
 
-long ricercaNumeroConto(char * pathBanca, int numeroConto);
+long ricercaNumeroConto(char * , int );
+
+void getPathMovimenti(char * , char *, int);
+
+Cliente getCliente(char * , long );
 
                                          //      CODICE
 
@@ -107,6 +110,8 @@ void main(int argc, char* argv[]){
     char bancaSelezionata[30]="\0", conferma = '\0';
 
     int scelta, disconnesso = 1, fileok = 0;
+
+    long pos;
 
     strcpy(pathBanca, PATH_SUFFIX);
 
@@ -138,7 +143,7 @@ void main(int argc, char* argv[]){
 
                     if(strcmp(password, "3PDINFO")){
 
-                        printf("\n\t La password immessa e' errata!\n\t ");
+                        printf("\n\tLa password immessa e' errata!\n\t ");
 
                         //Sleep(1400); //debug inserire nuovamente
 
@@ -146,7 +151,7 @@ void main(int argc, char* argv[]){
 
                 //}while(strcmp(password, PASSWORD)); //debug inserire nuovamente
 
-                printf("\n\t Login effettuato, benvenuto impiegato_05!\n\t ");
+                printf("\n\tLogin effettuato, benvenuto impiegato_05!\n\t ");
 
                 disconnesso = 0;
 
@@ -161,9 +166,9 @@ void main(int argc, char* argv[]){
                     if(fileok){
 
                         printf("\n\tArchivio bancario aperto: %s", bancaSelezionata);
-                        printf("\n\tPath dell'archivio bancario: %s", pathBanca); //debug
-                        printf("\n\tPath dei movimenti bancari:  %s", pathMovimenti); //debug
-                         printf("\n\t_________________________________\n");
+                        //printf("\n\tPath dell'archivio bancario: %s", pathBanca); //debug
+                        //printf("\n\tPath dei movimenti bancari:  %s", pathMovimenti); //debug
+                        printf("\n\t_________________________________\n");
 
                     }
 
@@ -201,17 +206,37 @@ void main(int argc, char* argv[]){
 
                                 }
 
-                            } 
+                            }
 
-                            if(ottieniBanca(pathBanca, pathMovimenti, bancaSelezionata)){
+                            system("cls");
 
+                            printf("\n\t\t\t\t   PORTALE IMPIEGATI\n\t\t\tVISUALIZZAZIONE ELENCO ARCHIVI BANCARI");
+
+                            if(getBanca(pathBanca, pathMovimenti, bancaSelezionata)){
+
+                                getPathMovimenti(pathMovimenti, bancaSelezionata, 0);
+                                
                                 fileok = 1;
 
                                 printf("\tL' archivio bancario \"%s\" e' stato caricato con successo!", bancaSelezionata);
 
                                 Sleep(1600);
 
-                            }  
+                            }else{
+
+                                printf("\n\tNon e' stata trovato nessun archivio bancario, crearne uno nuovo? [y/n] "); 
+
+                                fflush(stdin);
+
+                                conferma = getchar();       
+                                
+                                if(toupper(conferma) == 'Y'){
+                                    
+                                    if(!creaArchivio(pathBanca, pathMovimenti, bancaSelezionata)){printf("\n\n\tOperazione annullata");}
+                                    
+                                } else{printf("\n\n\tOperazione annullata");}
+
+                            }
 
                             break;
 
@@ -309,6 +334,8 @@ void main(int argc, char* argv[]){
 
                             if (fileok){menuRicerca(pathBanca);} else{printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!\n\t");}
 
+                            system("pause");
+
                             break;
 
                         case 0:
@@ -318,6 +345,14 @@ void main(int argc, char* argv[]){
                             printf("\n\tDisconnessione in corso...");
 
                             Sleep(1400);
+
+                            strcpy(pathBanca, PATH_SUFFIX);
+
+                            strcpy(bancaSelezionata, "\0");
+
+                            strcpy(pathMovimenti, "\0");
+
+                            fileok = 0;
 
                             scelta = -1; //valore impostato a -1 per la successiva valutazione della variabile nel menu principale
 
@@ -339,7 +374,103 @@ void main(int argc, char* argv[]){
 
             case 2:
 
-                //portale clienti
+                system("cls");
+
+                printf("\n\t\tLOGIN PORTALE CLIENTI\n");
+
+                printf("\n\tElenco archivi bancari presenti:");
+                
+                getBanca(pathBanca, pathMovimenti, bancaSelezionata); 
+
+                Sleep(300);
+
+                system("cls");
+
+                printf("\n\t\tLOGIN BANCA %s\n", strupr(bancaSelezionata));
+                
+                if(loginCliente(pathBanca, &pos)){
+
+                    Cliente cliente_Letto;
+
+                    cliente_Letto = getCliente(pathBanca, pos);
+
+                    printf("\n\tLogin effettuato, benvenuto %s!\n\t ", cliente_Letto.nome);
+
+                    getPathMovimenti(pathMovimenti, bancaSelezionata, cliente_Letto.numero_conto);
+                    
+                    Sleep(1400);
+
+                    disconnesso = 0;
+
+                    do{
+                        
+                        system("cls");
+
+                        printf("\n\t\t   PORTALE CLIENTI\n");
+
+                        printf("\n\tSelezionare operazione da eseguire:\n\n\t\t[1] Effettua operazione\n\t\t[2] Visualizza movimenti\n\t\t[3] Visualizza informazioni conto\n\t\t[0] Logout\n\n\tScelta: ");
+
+                        fflush(stdin);
+
+                        scelta = checkInt();
+
+                        switch(scelta){
+                            
+                            case 1:
+
+                                // operazione
+
+                                break;
+
+                            case 2:
+
+                                // visualizza movimenti
+
+                                break;
+                            case 3:
+
+                                system("cls");
+
+                                printf("\n\t\t   VISUALIZZAZIONE INFORMAZIONI CONTO\n");
+
+                                visualizzaRecordStruct(cliente_Letto);
+
+                                printf("\n\t");
+
+                                system("pause");
+
+                                break;
+
+                            case 0:
+
+                                disconnesso = 1;
+
+                                printf("\n\tDisconnessione in corso...");
+
+                                strcpy(pathBanca, PATH_SUFFIX);
+
+                                strcpy(bancaSelezionata, "\0");
+
+                                strcpy(pathMovimenti, "\0");
+
+                                Sleep(1400);
+
+                                scelta = -1; //valore impostato a -1 per la successiva valutazione della variabile nel menu principale
+
+                                break;
+
+                            default:
+                                
+                                printf("\n\tErrore! Scelta non consentita!");
+            
+                                Sleep(1400);
+
+                                break;
+                        }
+
+                    }while(!disconnesso);
+
+                }               
 
                 break;
 
@@ -365,27 +496,57 @@ void main(int argc, char* argv[]){
    
 }
 
-/*
-void datasystem(int *g, int *m, int *a){
+int loginCliente(char * pathBanca, long * pos){
 
-    struct tm *now= NULL;
+    FILE * flogico;
 
-    long tempo;
+    Cliente clienteLetto;
 
-    time(&tempo);
+    char bufferUsername [50];
 
-    now=localtime(&tempo);
+    char bufferPassword [50];
 
-    *g=now->tm_mday;
+    flogico = fopen(pathBanca, "rb");
 
-    *m=now->tm_mon+1;
+    printf("\n\tUsername: ");
 
-    *a=now->tm_year+1900;
+    fflush(stdin);
     
-}
-*/
+    gets(bufferUsername);
 
-int getConto(char * path){ // ritorna un integer > 0 no indice!
+    *pos = ricercaUsername(pathBanca, bufferUsername); //il valore di pos varierà anche nel main
+
+    if(*pos!=-1){
+
+        fseek(flogico, *pos, SEEK_SET);
+
+        fread(&clienteLetto, sizeof(Cliente), 1, flogico);
+
+        printf("\tPassword: ");
+
+        fflush(stdin);
+
+        gets(bufferPassword);
+
+        if(!strcmp(clienteLetto.username, bufferUsername) && !strcmp(clienteLetto.password, bufferPassword)){
+
+            fclose(flogico);
+
+            return 1;
+
+        }else{printf("\n\tLa password immessa e' errata!\n\t "); return 0;}
+
+    } else {
+
+        printf("\n\tL'username inserito non e' presente nell'archivio");
+
+        return 0;
+
+    }
+
+}
+
+int getNextConto(char * path){ // ritorna un integer > 0 no indice!
 
     FILE * flogico;
 
@@ -419,6 +580,24 @@ int getConto(char * path){ // ritorna un integer > 0 no indice!
     
 }
 
+Cliente getCliente(char * pathBanca, long pos){
+
+    FILE * flogico;
+
+    Cliente clientLetto;
+
+    flogico = fopen(pathBanca, "rb");
+
+    fseek(flogico, pos, SEEK_SET);
+
+    fread(&clientLetto, sizeof(Cliente), 1, flogico);
+
+    fclose(flogico);
+
+    return clientLetto;
+
+}
+
 int caricaCliente(char * path, char* pathMovimenti , char * banca){
     
                                              //      VARIABILI
@@ -429,7 +608,7 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){
 
                                              //       CODICE
     
-    cliente.numero_conto = getConto(path);
+    cliente.numero_conto = getNextConto(path);
 
     if(creaFileMovimenti(pathMovimenti, cliente.numero_conto, banca)){ //per far si che funzioni il mio pathMovimenti deve essere BANCHE\\MOVIMENTI_<banca> !!
 
@@ -587,37 +766,10 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){
 
         scanf("%d", &cliente.prelievo_max);
         
-        if(scriviFILE(path, cliente)){return 1;} 
+        if(scriviClienteFILE(path, cliente)){return 1;} 
 
     }else{return 0;}
 
-}
-
-int checkInt(void){
-
-    int var, is_int;
-
-	do{
-        
-        fflush(stdin);
-        
-        if (scanf("%d", &var)){
-
-            is_int = 1;
-
-        }
-        else {
-
-            printf("\n\tValore invalido, inserire un numero intero! Inserire nuovamente: ");
-
-        }
-        
-	} while (!is_int);
-	
-    is_int = 0;
-
-	return var;
-   
 }
 
 int creaFileMovimenti(char * pathMovimenti, int numero_conto, char* banca){ //pathmovimenti sara' BANCHE\\MOVIMENTI_<banca>\\ al momento della chiamata
@@ -660,7 +812,7 @@ int creaFileMovimenti(char * pathMovimenti, int numero_conto, char* banca){ //pa
 
 }
 
-int ottieniBanca(char * path, char * pathMovimenti, char * banca){ //inserire prima porzione in una procedura a parte?
+int getBanca(char * pathBanca, char * pathMovimenti, char * banca){ 
 
                                          //      VARIABILI
 
@@ -676,13 +828,13 @@ int ottieniBanca(char * path, char * pathMovimenti, char * banca){ //inserire pr
 
                                          //      CODICE
 
-    cartella = opendir(path);
+    cartella = opendir(pathBanca);
 
     if(cartella == NULL){ // se non vi e' una directory "BANCHE", la creo
 
-        mkdir(path);
+        mkdir(pathBanca);
 
-        cartella = opendir(path);
+        cartella = opendir(pathBanca);
 
     }
 
@@ -706,10 +858,6 @@ int ottieniBanca(char * path, char * pathMovimenti, char * banca){ //inserire pr
 
     closedir(cartella);
 
-    system("cls");
-
-    printf("\n\t\t\t\t   PORTALE IMPIEGATI\n\t\t\tVISUALIZZAZIONE ELENCO ARCHIVI BANCARI");
-
     if(i==30){printf("\n\tAttenzione e' stato possibile leggere solamente i primi 30 elementi nella directory. \n\tIl record desiderato potrebbe non essere presente all'interno della lista\n");}
 
     printf("\n");
@@ -726,7 +874,7 @@ int ottieniBanca(char * path, char * pathMovimenti, char * banca){ //inserire pr
 
     if(trovato){
 
-        printf("\n\n\tImmettere l'archivio bancario da aprire: ");
+        printf("\n\n\tImmettere l'archivio bancario desiderato: ");
 
         int scelta;
 
@@ -740,38 +888,39 @@ int ottieniBanca(char * path, char * pathMovimenti, char * banca){ //inserire pr
 
         strcpy(banca, listaBanche[scelta-1]);
 
-        strcat(path, banca);                           //path::             BANCHE\\<banca>
-
-        strcpy(pathMovimenti, PATH_SUFFIX);            //pathMovimenti::    BANCHE\\  <- sovrascrivo buffer e gli assegno il mio path (BANCHE\\)
-
-        strcat(pathMovimenti, "MOVIMENTI_");           //pathMovimenti::    BANCHE\\MOVIMENTI_
-
-        strcat(pathMovimenti, banca);                  //pathMovimenti::    BANCHE\\MOVIMENTI_<banca>
-
-        strcat(pathMovimenti, "\\");                   //pathMovimenti::    BANCHE\\MOVIMENTI_<banca>\\ 
-
-        //printf("\n\npathMovimenti in ottieniBanca: %s\n\n", pathMovimenti); //debug
+        strcat(pathBanca, banca);                       //path::             BANCHE\\<banca>
 
         return 1;
 
-    } else{ //se non e' stato trovato almeno un archivio bancario chiedo all'utente se ne vuole creare uno nuovo
+    } else{return 0;}
+
+}
+
+void getPathMovimenti(char * pathMovimenti, char * banca, int n_conto){
+
+    
+    strcpy(pathMovimenti, PATH_SUFFIX);            //pathMovimenti::    BANCHE\\  
+    
+    strcat(pathMovimenti, "MOVIMENTI_");           //pathMovimenti::    BANCHE\\MOVIMENTI_
+
+    strcat(pathMovimenti, banca);                  //pathMovimenti::    BANCHE\\MOVIMENTI_<banca>
+
+    strcat(pathMovimenti, "\\");                   //pathMovimenti::    BANCHE\\MOVIMENTI_<banca>\\ 
+
+    if(n_conto){
+
+        strcat(pathMovimenti, banca);               //pathMovimenti::    BANCHE\\MOVIMENTI_<banca>\\<banca>
+
+        strcat(pathMovimenti, "_");                 //pathMovimenti::    BANCHE\\MOVIMENTI_<banca>\\<banca>_
+
+        char buffer [50];
+
+        itoa(n_conto, buffer, 10);
+
+        strcat(pathMovimenti, buffer);              //pathMovimenti::    BANCHE\\MOVIMENTI_<banca>\\<banca>_<n_conto>
         
-        printf("\n\tNon e' stata trovato nessun archivio bancario, crearne uno nuovo? [y/n] "); 
-
-        fflush(stdin);
-
-        conferma = getchar();       
-        
-        if(toupper(conferma) == 'Y'){
-            
-            if(creaArchivio(path, pathMovimenti, banca)){return 1;}else{printf("\n\n\tOperazione annullata");}
-            
-        } else{printf("\n\n\tOperazione annullata");}
-
     }
-
-    return 0;
-
+    
 }
 
 int creaArchivio(char * path, char* pathMovimenti, char * banca){
@@ -842,6 +991,20 @@ int creaArchivio(char * path, char* pathMovimenti, char * banca){
 
 }
 
+int scriviClienteFILE(char * path, Cliente nuovoCliente){
+    
+    FILE * flogico;
+
+    flogico = fopen(path, "ab");
+
+    fwrite(&nuovoCliente, sizeof(Cliente), 1, flogico);
+
+    fclose(flogico);
+
+    return 1;
+
+}
+
 int creaFilePath(char * nomefisico, char * path){
     
     FILE *flogico;
@@ -899,19 +1062,52 @@ int esisteFile(char * path){
 
 }
 
-int scriviFILE(char * path, Cliente nuovoCliente){
-    
-    FILE * flogico;
+int checkInt(void){
 
-    flogico = fopen(path, "ab");
+    int var, is_int;
 
-    fwrite(&nuovoCliente, sizeof(Cliente), 1, flogico);
+	do{
+        
+        fflush(stdin);
+        
+        if (scanf("%d", &var)){
 
-    fclose(flogico);
+            is_int = 1;
 
-    return 1;
+        }
+        else {
 
+            printf("\n\tValore invalido, inserire un numero intero! Inserire nuovamente: ");
+
+        }
+        
+	} while (!is_int);
+	
+    is_int = 0;
+
+	return var;
+   
 }
+
+void datasystem(int *g, int *m, int *a){
+
+    struct tm *now= NULL;
+
+    time_t t;
+
+    time(&t);
+
+    now = localtime(&t);
+
+    *g=now->tm_mday;
+
+    *m=now->tm_mon+1;
+
+    *a=now->tm_year+1900;
+    
+}
+
+// VISUALIZZAZIONI
 
 void visualizzaRecordStruct(Cliente id){
 
@@ -939,7 +1135,7 @@ void visualizzaRecordStruct(Cliente id){
     
     printf("\n\tPrelievo massimo eseguibile: %d eur\n", id.prelievo_max);
 
-    printf("\n\t _______________________\n");
+    printf("\n\t________________________\n");
 
 }
 
@@ -998,6 +1194,8 @@ int visualizzaArchivio(char * path){
     return haRecord;
 
 }
+
+// RICERCA
 
 void menuRicerca(char * pathBanca){
 
@@ -1261,3 +1459,9 @@ long ricercaNumeroConto(char * pathBanca, int numeroConto){
     return pos;  
 
 }
+
+/*int eseguiOperazione(char* pathMovimenti, Cliente datiCliente, const char operazione){
+
+    FILE * fileMovimenti;
+
+}*/
