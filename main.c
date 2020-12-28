@@ -8,6 +8,8 @@
 
 #define PATH_SUFFIX "BANCHE\\"
 #define PASSWORD "3PDINFO"
+#define PRELIEVO_MINIMO 0.01
+#define DEPOSITO_MINIMO 0.01
 
                                          //      TIPI
 
@@ -87,6 +89,8 @@ int visualizzaRecordPosizione(char * , long );
 
 void menuRicerca(char * );
 
+void menuVisualizzazioneMovimenti(char *);
+
 long ricercaUsername(char * , char * );
 
 long ricercaNominativo(char * , char * , char * );
@@ -112,6 +116,8 @@ int visualizzaMovimenti(char *);
 int visualizzaMovimentiTipo(char *, char *);
 
 int visualizzaMovimentiMese(char *, Data);
+
+void resetBanche(char * , char * , char * );
 
                                          //      CODICE
 
@@ -188,7 +194,7 @@ void main(int argc, char* argv[]){
 
                     }
 
-                    printf("\n\tSelezionare operazione da eseguire:\n\n\t\t[1] Apri archivio bancario\n\t\t[2] Crea nuovo archivio\n\t\t[3] Inserisci nuovo cliente nell'archivio\n\t\t[4] Visualizza i record nell'archivio\n\t\t[5] Ricerca cliente nell'archivio\n\t\t[0] Disconnetti\n\n\tScelta: ");
+                    printf("\n\tSelezionare operazione da eseguire:\n\n\t\t[1] Apri archivio bancario\n\t\t[2] Crea nuovo archivio\n\t\t[3] Inserisci nuovo cliente nell'archivio\n\t\t[4] Visualizza i record nell'archivio\n\t\t[5] Ricerca cliente nell'archivio\n\t\t[6] Visualizza movimenti conto corrente\n\t\t[0] Disconnetti\n\n\tScelta: ");
 
                     fflush(stdin);
 
@@ -362,6 +368,56 @@ void main(int argc, char* argv[]){
 
                             break;
 
+                        case 6:
+
+                            if (fileok){
+
+                                system("cls");
+
+                                printf("\n\t\t\t\t   VISUALIZZAZIONE MOVIMENTI CONTO\n");
+
+                                printf("\n\tInserire il numero di conto di cui si vogliono visualizzare i movimenti, 0 per annullare: ");
+
+                                scelta = checkInt();
+
+                                if(!scelta){
+                                    
+                                    printf("\n\n\tOperazione annullata\n\t");
+                                    
+                                    system("pause"); 
+
+                                    break;
+                                    
+                                } else{
+
+                                    generaPathMovimenti(pathMovimenti, bancaSelezionata, scelta);
+
+                                    Sleep(500);
+
+                                    if(esisteFile(pathMovimenti)){
+
+                                        menuVisualizzazioneMovimenti(pathMovimenti);
+                                    
+                                    } else{
+
+                                        printf("\n\tErrore! Il conto desiderato non risulta presente nell'archivio\n\t");
+
+                                        system("pause");
+
+                                    }
+
+                                }
+                                
+                            } else{
+
+                                printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!\n\t");
+
+                                system("pause");
+
+                            }
+
+                            break;
+
                         case 0:
 
                             disconnesso = 1;
@@ -370,11 +426,7 @@ void main(int argc, char* argv[]){
 
                             Sleep(1400);
 
-                            strcpy(pathBanca, PATH_SUFFIX);
-
-                            strcpy(bancaSelezionata, "\0");
-
-                            strcpy(pathMovimenti, "\0");
+                            resetBanche(pathBanca, bancaSelezionata, pathMovimenti);
 
                             fileok = 0;
 
@@ -400,239 +452,164 @@ void main(int argc, char* argv[]){
 
                 system("cls");
 
-                printf("\n\t\tLOGIN PORTALE CLIENTI\n");
+                printf("\n\t\tLOGIN PORTALE CLIENTI");
 
-                printf("\n\tElenco archivi bancari presenti:");
+                printf("\n\n\tElenco archivi bancari presenti:");
                 
-                getBanca(pathBanca, pathMovimenti, bancaSelezionata); 
+                if(getBanca(pathBanca, pathMovimenti, bancaSelezionata)){
 
-                Sleep(300);
+                    Sleep(300);
 
-                system("cls");
+                    system("cls");
 
-                printf("\n\t\tLOGIN BANCA %s\n", strupr(bancaSelezionata));
-                
-                if(loginCliente(pathBanca, &pos)){
-
-                    Cliente cliente_Letto;
-
-                    cliente_Letto = getCliente(pathBanca, pos);
-
-                    printf("\n\tLogin effettuato, benvenuto %s! ", cliente_Letto.nome);
-
-                    generaPathMovimenti(pathMovimenti, bancaSelezionata, cliente_Letto.numero_conto);
+                    printf("\n\t\t\tLOGIN BANCA %s\n", strupr(bancaSelezionata));
                     
-                    Sleep(1400);
+                    if(loginCliente(pathBanca, &pos)){
 
-                    disconnesso = 0;
+                        Cliente cliente_Letto;
 
-                    do{
+                        cliente_Letto = getCliente(pathBanca, pos);
+
+                        printf("\n\tLogin effettuato, benvenuto %s! ", cliente_Letto.nome);
+
+                        generaPathMovimenti(pathMovimenti, bancaSelezionata, cliente_Letto.numero_conto);
                         
-                        system("cls");
+                        Sleep(1400);
 
-                        printf("\n\t\t   PORTALE CLIENTI\n");
+                        disconnesso = 0;
 
-                        printf("\n\tSelezionare operazione da eseguire:\n\n\t\t[1] Effettua operazione\n\t\t[2] Visualizza movimenti\n\t\t[3] Visualizza informazioni conto\n\t\t[0] Logout\n\n\tScelta: ");
-
-                        fflush(stdin);
-
-                        scelta = checkInt();
-
-                        switch(scelta){
+                        do{
                             
-                            case 1:
+                            system("cls");
 
-                                system("cls");
+                            printf("\n\t\t   PORTALE CLIENTI\n");
 
-                                printf("\n\t\t   EFFETTUA OPERAZIONE BANCARIA\n");
+                            printf("\n\tSelezionare operazione da eseguire:\n\n\t\t[1] Effettua operazione\n\t\t[2] Visualizza movimenti\n\t\t[3] Visualizza informazioni conto\n\t\t[0] Logout\n\n\tScelta: ");
 
-                                printf("\n\tSeleziona il tipo di operazione da eseguire\n\n\t\t[1] Prelievo \n\t\t[2] Deposito\n\n\tScelta: ");
+                            fflush(stdin);
 
-                                do{
+                            scelta = checkInt();
 
-                                    scelta = checkInt();
+                            switch(scelta){
+                                
+                                case 1:
 
-                                    switch(scelta){
-
-                                        case 1:
-
-                                            if(eseguiOperazione(pathMovimenti, &cliente_Letto, "Prelievo")){
-
-                                                setCliente(pathBanca, cliente_Letto); // La funzione setCliente salva le modifiche apportate da eseguiOperazione (saldo)
-
-                                                printf("\n\tOperazione andata a buon fine! Verrai ora reindirizzato al portale clienti...");
-
-                                                Sleep(2400);
-
-                                            }
-
-                                            break;
-                                        
-                                        case 2:
-
-                                            if(eseguiOperazione(pathMovimenti, &cliente_Letto, "Deposito")){
-
-                                                setCliente(pathBanca, cliente_Letto); // La funzione setCliente salva le modifiche apportate da eseguiOperazione (saldo)
-
-                                                printf("\n\tOperazione andata a buon fine! Verrai ora reindirizzato al portale clienti...");
-
-                                                Sleep(2400);
-
-                                            }
-
-                                            break;
-
-                                        default:
-
-                                            if(scelta){printf("\n\tErrore! Scelta non consentita");}
-
-                                            Sleep(2400);
-
-                                            break;
-
-                                    }
-
-                                } while(scelta<0 || scelta>2);
-
-                                break;
-
-                            case 2:
-
-                                do{
                                     system("cls");
 
-                                    printf("\n\t\t   VISUALIZZAZIONE MOVIMENTI BANCARI\n");
+                                    printf("\n\t\t   EFFETTUA OPERAZIONE BANCARIA\n");
 
-                                    printf("\n\tSeleziona il criterio di visualizzazione:\n\n\t\t[1] Visualizza tutti \n\t\t[2] Visualizza per mese\n\t\t[3] Visualizza per tipo\n\t\t[0] Indietro\n\n\tScelta: ");
+                                    printf("\n\tSeleziona il tipo di operazione da eseguire\n\n\t\t[1] Prelievo \n\t\t[2] Deposito\n\n\tScelta: ");
+
+                                    do{
+
+                                        scelta = checkInt();
+
+                                        switch(scelta){
+
+                                            case 1:
+
+                                                if(eseguiOperazione(pathMovimenti, &cliente_Letto, "Prelievo")){
+
+                                                    setCliente(pathBanca, cliente_Letto); // La funzione setCliente salva le modifiche apportate da eseguiOperazione (saldo)
+
+                                                    printf("\n\tOperazione andata a buon fine! Verrai ora reindirizzato al portale clienti...");
+
+                                                    Sleep(2400);
+
+                                                }
+
+                                                break;
+                                            
+                                            case 2:
+
+                                                if(eseguiOperazione(pathMovimenti, &cliente_Letto, "Deposito")){
+
+                                                    setCliente(pathBanca, cliente_Letto); // La funzione setCliente salva le modifiche apportate da eseguiOperazione (saldo)
+
+                                                    printf("\n\tOperazione andata a buon fine! Verrai ora reindirizzato al portale clienti...");
+
+                                                    Sleep(2400);
+
+                                                }
+
+                                                break;
+
+                                            default:
+
+                                                if(scelta){printf("\n\tErrore! Scelta non consentita");}
+
+                                                Sleep(2400);
+
+                                                break;
+
+                                        }
+
+                                    } while(scelta<0 || scelta>2);
+
+                                    break;
+
+                                case 2:
+
+                                    menuVisualizzazioneMovimenti(pathMovimenti);
+
+                                    break;
+
+                                case 3:
+
+                                    system("cls");
+
+                                    printf("\n\t\t   VISUALIZZAZIONE INFORMAZIONI CONTO\n");
+
+                                    visualizzaRecordStruct(cliente_Letto);
+
+                                    printf("\n\t");
+
+                                    system("pause");
+
+                                    break;
+
+                                case 0:
+
+                                    disconnesso = 1;
+
+                                    printf("\n\tDisconnessione in corso...");
+
+                                    strcpy(pathBanca, PATH_SUFFIX);
+
+                                    strcpy(bancaSelezionata, "\0");
+
+                                    strcpy(pathMovimenti, "\0");
+
+                                    Sleep(1400);
+
+                                    scelta = -1; //valore impostato a -1 per la successiva valutazione della variabile nel menu principale
+
+                                    break;
+
+                                default:
                                     
-                                    scelta = checkInt();
+                                    printf("\n\tErrore! Scelta non consentita!");
+                
+                                    Sleep(1400);
 
-                                    switch(scelta){
+                                    break;
+                            }
 
-                                        case 1:
+                        }while(!disconnesso);
 
-                                            system("cls");
+                    }           
 
-                                            printf("\n\t\t   VISUALIZZA TUTTI I MOVIMENTI\n");
+                } else{
+                   
+                    printf("\n\tErrore! Impossibile caricare gli archivi bancari, contattare un impiegato. \n\n\t(Non sono presenti archivi bancari su disco, e' necessario crearne uno tramite il portale impiegato)\n\t"); // come far venire un infarto al cliente 
 
-                                            if(!visualizzaMovimenti(pathMovimenti)){printf("\n\tNon sono presenti movimenti all'interno del conto.");}
+                    system("pause"); 
+                
+                }
 
-                                            printf("\n\t");
+                resetBanche(pathBanca, bancaSelezionata, NULL);
 
-                                            system("pause");
-                                            
-                                            break;
-
-                                        case 2:
-
-                                            system("cls");
-
-                                            printf("\n\t\t   VISUALIZZA MOVIMENTI PER MESE\n");
-
-                                            Data data;
-
-                                            printf("\n\tInserire mese: ");
-
-                                            data.mm = checkInt();
-
-                                            printf("\n\tInserire anno: ");
-
-                                            data.aaaa = checkInt();
-
-                                            if(!visualizzaMovimentiMese(pathMovimenti, data)){printf("\n\tNon sono presenti movimenti all'interno del conto.");}
-
-                                            printf("\n\t");
-
-                                            system("pause");
-                                            
-                                            break;
-
-                                        case 3:
-
-                                            system("cls");
-
-                                            printf("\n\t\t   VISUALIZZA MOVIMENTI PER TIPO\n");
-
-                                            printf("\n\tVisualizza:\n\n\t\t[1] Prelievi \n\t\t[2] Depositi\n\t\t[0] Indietro\n\n\tScelta: ");
-
-                                            scelta = checkInt();
-
-                                            if(scelta == 1){visualizzaMovimentiTipo(pathMovimenti, "Prelievo");} else{visualizzaMovimentiTipo(pathMovimenti, "Deposito");}
-
-                                            printf("\n\t");
-
-                                            system("pause");
-
-                                            break;
-
-                                        default:
-
-                                            if(scelta){
-                                                
-                                                printf("\n\tErrore! Scelta non consentita");
-                                            
-                                                printf("\n\t");
-
-                                                system("pause");
-                                            
-                                            }else{Sleep(800);}
-
-                                            break;
-
-                                    }
-                                    
-                                }while(scelta);
-                                
-                                scelta = -1;
-
-                                break;
-
-                            case 3:
-
-                                system("cls");
-
-                                printf("\n\t\t   VISUALIZZAZIONE INFORMAZIONI CONTO\n");
-
-                                visualizzaRecordStruct(cliente_Letto);
-
-                                printf("\n\t");
-
-                                system("pause");
-
-                                break;
-
-                            case 0:
-
-                                disconnesso = 1;
-
-                                printf("\n\tDisconnessione in corso...");
-
-                                strcpy(pathBanca, PATH_SUFFIX);
-
-                                strcpy(bancaSelezionata, "\0");
-
-                                strcpy(pathMovimenti, "\0");
-
-                                Sleep(1400);
-
-                                scelta = -1; //valore impostato a -1 per la successiva valutazione della variabile nel menu principale
-
-                                break;
-
-                            default:
-                                
-                                printf("\n\tErrore! Scelta non consentita!");
-            
-                                Sleep(1400);
-
-                                break;
-                        }
-
-                    }while(!disconnesso);
-
-                }               
-
-                break;
+                break; 
 
             case 0:
 
@@ -830,7 +807,7 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){
 
 }
 
-void generaPathMovimenti(char * pathMovimenti, char * banca, int n_conto){
+void generaPathMovimenti(char * pathMovimenti, char * banca, int n_conto){ //Passando 0 come ultimo parametro, la funzione si limiterà a generare un path nel formato BANCHE\\MOVIMENTI_<banca>\\ utile per la generazione di un nuovo archivio
 
     
     strcpy(pathMovimenti, PATH_SUFFIX);            //pathMovimenti::    BANCHE\\  
@@ -859,7 +836,7 @@ void generaPathMovimenti(char * pathMovimenti, char * banca, int n_conto){
 
 int checkInt(void){
 
-    int var, isInt;
+    int var, isInt = 0;
 
 	do{
         
@@ -869,8 +846,7 @@ int checkInt(void){
 
             isInt = 1;
 
-        }
-        else {
+        } else {
 
             printf("\n\tValore invalido, inserire un numero intero! Inserire nuovamente: ");
 
@@ -927,6 +903,14 @@ void datasystem(Data *data){
     
 }
 
+void resetBanche(char * pathBanca, char * bancaSelezionata, char * pathMovimenti){
+
+    if(pathBanca!=NULL){strcpy(pathBanca, PATH_SUFFIX);}
+    if(bancaSelezionata!=NULL){strcpy(bancaSelezionata, "\0");}
+    if(pathMovimenti!=NULL){strcpy(pathMovimenti, "\0");}
+
+}
+
 // OPERAZIONI SU FILES
 
 int loginCliente(char * pathBanca, long * pos){
@@ -941,39 +925,53 @@ int loginCliente(char * pathBanca, long * pos){
 
     flogico = fopen(pathBanca, "rb");
 
-    printf("\n\tUsername: ");
+    fseek(flogico, 0, SEEK_END);
 
-    fflush(stdin);
+    if(!ftell(flogico)){
+
+        printf("\n\tL'archivio selezionato risulta essere vuoto\n\t");
+
+        system("pause");
+
+    }else{
     
-    gets(bufferUsername);
-
-    *pos = ricercaUsername(pathBanca, bufferUsername); //il valore di pos varierà anche nel main
-
-    if(*pos!=-1){
-
-        fseek(flogico, *pos, SEEK_SET);
-
-        fread(&clienteLetto, sizeof(Cliente), 1, flogico);
-
-        printf("\tPassword: ");
+        printf("\n\tUsername: ");
 
         fflush(stdin);
+        
+        gets(bufferUsername);
 
-        gets(bufferPassword);
+        *pos = ricercaUsername(pathBanca, bufferUsername); //il valore di pos varierà anche nel main
 
-        if(!strcmp(clienteLetto.username, bufferUsername) && !strcmp(clienteLetto.password, bufferPassword)){
+        if(*pos!=-1){
 
-            fclose(flogico);
+            rewind(flogico);
 
-            return 1;
+            fread(&clienteLetto, sizeof(Cliente), 1, flogico);
 
-        }else{printf("\n\tLa password immessa e' errata!\n\t "); return 0;}
+            printf("\tPassword: ");
 
-    } else {
+            fflush(stdin);
 
-        printf("\n\tL'username inserito non e' presente nell'archivio");
+            gets(bufferPassword);
 
-        return 0;
+            if(!strcmp(clienteLetto.username, bufferUsername) && !strcmp(clienteLetto.password, bufferPassword)){
+
+                fclose(flogico);
+
+                return 1;
+
+            }else{printf("\n\tLa password immessa e' errata!\n\t"); system("pause"); return 0;}
+
+        } else {
+
+            printf("\n\tL'username inserito non e' presente nell'archivio\n\t");
+
+            system("pause");
+
+            return 0;
+
+        }
 
     }
 
@@ -1098,7 +1096,7 @@ int getBanca(char * pathBanca, char * pathMovimenti, char * banca){
     }
 
     closedir(cartella);
-
+    
     if(i==30){printf("\n\tAttenzione e' stato possibile leggere solamente i primi 30 elementi nella directory. \n\tIl record desiderato potrebbe non essere presente all'interno della lista\n");}
 
     printf("\n");
@@ -1252,13 +1250,13 @@ int esisteFile(char * path){
     
     FILE * flogico;
     
-    char buffer[40];
+    //char buffer[40];
 
-    strcpy(buffer, path);   
+    //strcpy(buffer, path);   
 
     //creo il path al file e successivamente lo apro in modalita' rb, se esiste ritorno 1
 
-    flogico = fopen(buffer, "rb");
+    flogico = fopen(path, "rb");
     
     if(flogico == NULL){ //flogico avra' valore null se NON ho trovato il file
 
@@ -1344,108 +1342,139 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
 
             system("cls");
 
-            printf("\n\t\t   EFFETTUA PRELIEVO BANCARIO\n");
+            printf("\n\t\t\t\tEFFETTUA PRELIEVO BANCARIO\n");
             
-            printf("\n\tSaldo disponibile: %.2lf eur\n\n\tInserire la quantita' di denaro da prelevare, inserire 0 per annullare l'operazione.\n\n\tImporto: ", datiCliente->saldo);
+            if(datiCliente->saldo && datiCliente->saldo>=PRELIEVO_MINIMO){
+                
+                printf("\n\tSaldo disponibile: %8.2lf eur\t\tPrelievo massimo per operazione: %8.2lf eur\n\n\tInserire la quantita' di denaro da prelevare, inserire 0 per annullare l'operazione.\n\n\tImporto: ",  datiCliente->saldo, datiCliente->prelievo_max);
 
-            input = checkDouble();
+                input = checkDouble();
 
-            if(input<=datiCliente->prelievo_max && input<= datiCliente->saldo){
+                if(input<=datiCliente->prelievo_max && input<= datiCliente->saldo && input >= PRELIEVO_MINIMO){
 
-                if(!input){
+                    if(!input){
 
-                    printf("\n\tOperazione annullata");
+                        printf("\n\tOperazione annullata");
 
-                    Sleep(1200);
+                        Sleep(1200);
 
-                    fclose(fileMovimenti);
+                        fclose(fileMovimenti);
 
-                    return 0;
+                        return 0;
+
+                    }
+                    
+                    movimentoLetto.importo = input;
+
+                    datasystem(&movimentoLetto.data_movimento);
+                    
+                    printMovimento(movimentoLetto);
+
+                    printf("\n\tConfermi di voler eseguire il movimento? [y/n]\n\n\tScelta: ");
+
+                    do{
+
+                        fflush(stdin);
+                        
+                        conferma = toupper(getchar());
+
+                        switch(conferma){
+
+                            case 'Y':
+
+                                //printf("\n\nPuntatore prima di fseek: %ul\n\n", ftell(fileMovimenti)); //debug
+
+                                //system("pause"); //debug
+                                
+                                fseek(fileMovimenti, 0, SEEK_END); 
+                                
+                                /*
+                                * Non ho idea del motivo per cui la scrittura su file non funzioni senza questo fseek i valori 
+                                * del puntatore prima e dopo l'esecuzione restano gli stessi eppure senza quest'istruzione 
+                                * il codice non funziona. Errno non restituisce alcun errore.
+                                * Possibile causa in:
+                                * 
+                                *  if(!fseek(fileMovimenti, -(long)sizeof(Movimenti), SEEK_END)) ?
+                                * 
+                                */
+
+                                //printf("\n\nPuntatore dopo di fseek: %ul\n\n", ftell(fileMovimenti)); //debug
+
+                                //system("pause"); //debug
+
+                                if(fwrite(&movimentoLetto, sizeof(Movimenti), 1, fileMovimenti)){
+                                    
+                                    datiCliente->saldo-=input;
+                                
+                                    fclose(fileMovimenti);
+
+                                    return 1;
+
+                                } else{
+                                
+                                    printf("\n\tErrore! impossibile eseguire l'operazione!");
+
+                                    system("pause");
+
+                                    fclose(fileMovimenti);
+
+                                    return 0;
+                                    
+                                }
+
+                                break;
+
+                            case 'N':
+
+                                printf("\n\tOperazione annullata!\n\t");
+
+                                fclose(fileMovimenti);
+
+                                break;
+
+                            default:
+
+                                printf("\n\tErrore! Scelta non consentita, inserire nuovamente: ");
+
+                                break;
+
+                        }
+
+                    } while(conferma != 'Y' && conferma != 'N');
+
+                } else{
+
+                    if(input>datiCliente->prelievo_max){ 
+                        
+                        printf("\n\tImpossibile eseguire il prelievo, l'importo immesso eccede la quantita' di denaro prelevabile per operazione\n\t");
+
+                    } else{ 
+                        
+                        if(input<PRELIEVO_MINIMO){
+                            
+                            printf("\n\tErrore! il prelievo minimo consentito e' %.2lf eur\n\t", PRELIEVO_MINIMO);
+
+                        } else{
+                            
+                            printf("\n\tImpossibile eseguire il prelievo, l'importo immesso eccede la quantita' di denaro presente sul conto\n\t"); 
+
+                        }
+
+                    } 
 
                 }
-                
-                movimentoLetto.importo = input;
-
-                datasystem(&movimentoLetto.data_movimento);
-                
-                printMovimento(movimentoLetto);
-
-                printf("\n\tConfermi di voler eseguire il movimento? [y/n]\n\n\tScelta: ");
-
-                do{
-
-                    fflush(stdin);
-                    
-                    conferma = toupper(getchar());
-
-                    switch(conferma){
-
-                        case 'Y':
-
-                            //printf("\n\nPuntatore prima di fseek: %ul\n\n", ftell(fileMovimenti)); //debug
-
-                            //system("pause"); //debug
-                            
-                            fseek(fileMovimenti, 0, SEEK_END); 
-                            
-                            /*
-                             * Non ho idea del motivo per cui la scrittura su file non funzioni senza questo fseek i valori 
-                             * del puntatore prima e dopo l'esecuzione restano gli stessi eppure senza quest'istruzione 
-                             * il codice non funziona. Errno non restituisce alcun errore.
-                             * Possibile causa in:
-                             * 
-                             *  if(!fseek(fileMovimenti, -(long)sizeof(Movimenti), SEEK_END)) ?
-                             * 
-                             */
-
-                            //printf("\n\nPuntatore dopo di fseek: %ul\n\n", ftell(fileMovimenti)); //debug
-
-                            //system("pause"); //debug
-
-                            if(fwrite(&movimentoLetto, sizeof(Movimenti), 1, fileMovimenti)){
-                                
-                                datiCliente->saldo-=input;
-                            
-                                fclose(fileMovimenti);
-
-                                return 1;
-
-                            } else{
-                               
-                                printf("\n\tErrore! impossibile eseguire l'operazione!");
-
-                                system("pause");
-
-                                fclose(fileMovimenti);
-
-                                return 0;
-                                
-                            }
-
-                            break;
-
-                        case 'N':
-
-                            printf("\n\tOperazione annullata!");
-
-                            fclose(fileMovimenti);
-
-                            break;
-
-                        default:
-
-                            printf("\n\tErrore! Scelta non consentita, inserire nuovamente: ");
-
-                            break;
-                    }
-
-                } while(conferma!='Y'|| conferma != 'N');
 
             } else{
 
-                if(input>datiCliente->prelievo_max){ printf("\n\tImpossibile eseguire il prelievo, l'importo immesso eccede la quantita' di denaro prelevabile per operazione\n\t");
-
-                } else{ printf("\n\tImpossibile eseguire il prelievo, l'importo immesso eccede la quantita' di denaro presente sul conto\n\t"); }
+                if(!datiCliente->saldo){
+                    
+                    printf("\n\tErrore! Impossibile eseguire un prelievo, il saldo sul conto e' 0 euro\n\t");
+                    
+                } else{
+                    
+                    printf("\n\tErrore! Impossibile eseguire un prelievo, il saldo sul conto e' inferiore alla quantita' minima di denaro prelevabile per operazione\n\t");
+                
+                }
 
             }
 
@@ -1467,7 +1496,7 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
                 
                 input = checkDouble();
 
-                if(input>0){
+                if(input>=DEPOSITO_MINIMO){
 
                     movimentoLetto.importo = input; 
 
@@ -1544,7 +1573,7 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
                                 break;
                         }
 
-                    } while(conferma!='Y'|| conferma != 'N');
+                    } while(conferma!='Y' && conferma != 'N');
 
                 } else{
 
@@ -1558,9 +1587,11 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
 
                         return 0;
 
-                    }
+                    } 
 
-                    printf("Errore! Inserire un valore maggiore o uguale a 0!");
+                    printf("\n\tErrore! il deposito minimo consentito e' %.2lf eur\n\t", DEPOSITO_MINIMO);
+
+                    system("pause");
 
                 }
 
@@ -1728,7 +1759,7 @@ long ricercaUsername(char * pathBanca, char * username){
 
     while(!feof(flogico)){
 
-        if(!stricmp(cliente_letto.username, username)){
+        if(!strcasecmp(cliente_letto.username, username)){ //fix? Con full caps la funzione non ritorna -1
 
             pos = ftell(flogico) - sizeof(Cliente); 
 
@@ -1935,11 +1966,115 @@ void printMovimento(Movimenti movimento){
 
     printf("\n\t____________________________________________________________");
 
-    printf("\n\n\tNumero operazione: %5d\n\n\tTipo operazione: %s\t Data operazione: %d/%d/%d\n\n\t", movimento.numero_operazione, movimento.tipo, movimento.data_movimento.gg,movimento.data_movimento.mm, movimento.data_movimento.aaaa);
+    printf("\n\n\tNumero operazione: %6d\n\n\tTipo operazione: %s\t Data operazione: %d/%d/%d\n\n\t", movimento.numero_operazione, movimento.tipo, movimento.data_movimento.gg,movimento.data_movimento.mm, movimento.data_movimento.aaaa);
 
     printf("Importo: %12.2lf eur\n", movimento.importo);
 
     printf("\n\t____________________________________________________________\n");
+
+}
+
+void menuVisualizzazioneMovimenti(char *pathMovimenti){
+
+    int scelta;
+    
+    do{
+
+        system("cls");
+
+        printf("\n\t\t\tVISUALIZZAZIONE MOVIMENTI BANCARI\n");
+
+        printf("\n\tSeleziona il criterio di visualizzazione dei movimenti bancari:\n\n\t\t[1] Visualizza tutti \n\t\t[2] Visualizza per mese\n\t\t[3] Visualizza per tipo\n\t\t[0] Indietro\n\n\tScelta: ");
+        
+        scelta = checkInt();
+
+        switch(scelta){
+
+            case 1:
+
+                system("cls");
+
+                printf("\n\t\t\tVISUALIZZA TUTTI I MOVIMENTI\n");
+
+                visualizzaMovimenti(pathMovimenti);
+
+                printf("\n\n\t");
+
+                system("pause");
+                
+                break;
+
+            case 2:
+
+                system("cls");
+
+                printf("\n\t\t\tVISUALIZZA MOVIMENTI PER MESE\n");
+
+                Data data;
+
+                printf("\n\tInserire mese: ");
+
+                data.mm = checkInt();
+
+                printf("\tInserire anno: ");
+
+                data.aaaa = checkInt();
+
+                visualizzaMovimentiMese(pathMovimenti, data);
+
+                printf("\n\n\t");
+
+                system("pause");
+                
+                break;
+
+            case 3:
+
+                system("cls");
+
+                printf("\n\t\t\tVISUALIZZA MOVIMENTI PER TIPO\n");
+
+                printf("\n\tVisualizza:\n\n\t\t[1] Prelievi \n\t\t[2] Depositi\n\t\t[0] Indietro\n\n\tScelta: ");
+
+                scelta = checkInt();
+
+                if(scelta == 1){
+                    
+                    visualizzaMovimentiTipo(pathMovimenti, "Prelievo");
+                
+                } else{
+                    
+                    if(scelta){ //Escludo lo 0 poiche' verra' utilizzato per annullare
+                        
+                        visualizzaMovimentiTipo(pathMovimenti, "Deposito");
+                    
+                    }else{printf("\n\tOperazione annullata");}
+
+                }
+
+                printf("\n\n\t");
+
+                system("pause");
+
+                break;
+
+            default:
+
+                if(scelta){
+                    
+                    printf("\n\tErrore! Scelta non consentita");
+                
+                    printf("\n\t");
+
+                    system("pause");
+                
+                }else{Sleep(800);}
+
+                break;
+
+        }
+        
+    }while(scelta);
 
 }
 
@@ -1955,23 +2090,27 @@ int visualizzaMovimenti(char * pathMovimenti){
 
     fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti);
 
-    while(!feof(filemovimenti)){
+    if(!feof(filemovimenti)){
 
-        printMovimento(movimentoLetto);
+        do{ 
 
-        haRecord = 1;
+            printMovimento(movimentoLetto);
 
-        fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti);
+            haRecord = 1;
 
-    }
+            fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti);
 
+        }while(!feof(filemovimenti));
+
+    }else{printf("\n\tNon vi sono movimenti presenti all'interno del conto");}
+    
     fclose(filemovimenti);
 
     return haRecord;
 
 }
 
-int visualizzaMovimentiMese(char * pathMovimenti, Data data){
+int visualizzaMovimentiMese(char * pathMovimenti, Data data){ // aggiungere controllo sulla data?
 
     FILE * filemovimenti;
 
