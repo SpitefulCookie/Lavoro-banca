@@ -9,6 +9,9 @@
 #define PASSWORD "3PDINFO"
 #define PRELIEVO_MINIMO 0.01
 #define DEPOSITO_MINIMO 0.01
+#define ANNO_MAX 2025
+#define ANNO_MIN 1900
+#define MIN_PRELIEVOMAX 500.00 
 
                                          //      TIPI
 
@@ -387,13 +390,13 @@ void main(int argc, char* argv[]){
 
                                     Sleep(500);
 
-                                    if(esisteFile(pathMovimenti)){
+                                    if(esisteFile(pathMovimenti)){ //non vi e' alcun controllo sulla presenza o meno di un cliente con numero di conto x nell'archivio principale
 
                                         menuVisualizzazioneMovimenti(pathMovimenti);
                                     
                                     } else{
 
-                                        printf("\n\tErrore! Il conto desiderato non risulta presente nell'archivio\n\t");
+                                        printf("\n\tErrore! Il conto desiderato o il suo record movimenti non risultano presenti nell'archivio\n\t"); 
 
                                         system("pause");
 
@@ -569,11 +572,7 @@ void main(int argc, char* argv[]){
 
                                     printf("\n\tDisconnessione in corso...");
 
-                                    strcpy(pathBanca, PATH_SUFFIX);
-
-                                    strcpy(bancaSelezionata, "\0");
-
-                                    strcpy(pathMovimenti, "\0");
+                                    resetBanche(pathBanca, bancaSelezionata, pathMovimenti);
 
                                     Sleep(1400);
 
@@ -630,175 +629,156 @@ void main(int argc, char* argv[]){
 
 // UTILITY
 
-int caricaCliente(char * path, char* pathMovimenti , char * banca){
-    
-                                             //      VARIABILI
+int caricaCliente(char * path, char* pathMovimenti , char * banca){ //pathMovimenti deve essere BANCHE\\MOVIMENTI_<banca> 
     
     Cliente cliente;
-
-    int controllo = 0;
-
-                                             //       CODICE
     
     cliente.numero_conto = getNextConto(path);
 
-    if(creaFileMovimenti(pathMovimenti, cliente.numero_conto, banca)){ //per far si che funzioni il mio pathMovimenti deve essere BANCHE\\MOVIMENTI_<banca> !!
+    system("cls");
 
-        system("cls");
+    printf("\n\t\t   INSERIMENTO CLIENTE\n");
+    
+    cliente.saldo = 0;
 
-        printf("\n\t\t   INSERIMENTO CLIENTE\n");
+    printf("\n\tDATI ANAGRAFICI:\n");
+    
+    printf("\n\tInserisci il cognome del cliente: ");
+
+    do{
         
-        cliente.saldo = 0;
+        fflush(stdin);
 
-        printf("\n\tDATI ANAGRAFICI:\n");
+        gets(cliente.cognome);
+
+        if(!stricmp(cliente.cognome, "") || !stricmp(cliente.cognome, " ")){
+
+            printf("\n\tErrore! Inserire un nome valido!\n\tInserisci nome cliente: ");
+
+        }
+
+    }while (!stricmp(cliente.cognome, "") || !stricmp(cliente.cognome, " "));
+
+    printf("\tInserisci nome del cliente: ");
+
+    do{
+
+        fflush(stdin);
+
+        gets(cliente.nome);
         
-        printf("\n\tInserisci il cognome del cliente: ");
+        if(!stricmp(cliente.nome, "") || !stricmp(cliente.nome, " ")){
 
-        do{
-            
-            fflush(stdin);
+            printf("\n\tErrore! Inserire un nome valido!\n\tInserisci nome cliente: ");
 
-            gets(cliente.cognome);
+        }
 
-            if(!stricmp(cliente.cognome, "") || !stricmp(cliente.cognome, " ")){
+    }while (!stricmp(cliente.nome, "") || !stricmp(cliente.nome, " "));   
 
-                printf(" Errore! Inserire un nome valido!\n Inserisci nome cliente: ");
+    printf("\tInserisci il giorno di nascita (gg): ");
 
-            }
+    do{ 
 
-        }while (!stricmp(cliente.cognome, "") || !stricmp(cliente.cognome, " "));
+        cliente.data_nascita.gg = checkInt();
 
-        printf("\tInserisci nome del cliente: ");
+        if (cliente.data_nascita.gg < 1 || cliente.data_nascita.gg > 31){
 
-        do{
+            printf("\n\tErrore! Giorno invalido, inserire nuovamente: ");
 
-            fflush(stdin);
+        }
 
-            gets(cliente.nome);
-            
-            if(!stricmp(cliente.nome, "") || !stricmp(cliente.nome, " ")){
+    } while (cliente.data_nascita.gg < 1 || cliente.data_nascita.gg > 31);
+    
+    printf("\tInserisci il mese di nascita (mm): ");
 
-                printf(" Errore! Inserire un nome valido!\n Inserisci nome cliente: ");
+    do{ 
 
-            }
+        cliente.data_nascita.mm = checkInt();
 
-        }while (!stricmp(cliente.nome, "") || !stricmp(cliente.nome, " "));   
+        if (cliente.data_nascita.mm < 1 || cliente.data_nascita.mm > 12){
 
-        printf("\tInserisci il giorno di nascita (gg): ");
+            printf("\n\tErrore! Mese invalido, inserire nuovamente: ");
 
-        do{ 
+        }
+    } while (cliente.data_nascita.mm < 1 || cliente.data_nascita.mm > 12);
+    
+    printf("\tInserisci l'anno di nascita (aaaa): ");
 
-            cliente.data_nascita.gg = checkInt();
+    do{ 
 
-            if (cliente.data_nascita.gg < 1 || cliente.data_nascita.gg > 31){
+        cliente.data_nascita.aaaa = checkInt();
 
-                printf(" Errore! Giorno invalido, inserire nuovamente: ");
+        if (cliente.data_nascita.aaaa < ANNO_MIN || cliente.data_nascita.aaaa > ANNO_MAX){printf("\n\tErrore! Anno invalido, inserire anno compreso tra [%4d-%4d]: ", ANNO_MIN, ANNO_MAX);}
 
-            }
+    } while (cliente.data_nascita.aaaa < ANNO_MIN || cliente.data_nascita.aaaa > ANNO_MAX);
 
-        } while (cliente.data_nascita.gg < 1 || cliente.data_nascita.gg > 31);
+    printf("\tInserisci sesso dell'cliente: ");
+
+    do{
+
+        fflush(stdin);
+
+        cliente.sesso = toupper(getchar());
+
+        if ((cliente.sesso != 'M' && cliente.sesso != 'F')){ printf("\n\tErrore! Valore invalido! Utilizzare [M/F] ");}
+
+    }while(cliente.sesso!='M'&&cliente.sesso!='F'); 
+
+    printf("\n\tCREDENZIALI D'ACCESSO:\n");
+    
+    printf("\n\tInserisci l'username del cliente: ");
+
+    do{
         
-        printf("\tInserisci il mese di nascita (mm): ");
+        fflush(stdin);
 
-        do{ 
+        gets(cliente.username);
 
-            cliente.data_nascita.mm = checkInt();
+        if(!stricmp(cliente.username, "") || !stricmp(cliente.username, " ")){
 
-            if (cliente.data_nascita.mm < 1 || cliente.data_nascita.mm > 12){
+            printf("\n\tErrore! Inserire un username valido!\n\tInserisci l'username del cliente: ");
 
-                printf("\n Errore! Mese invalido, inserire nuovamente: ");
+        }
 
-            }
-        } while (cliente.data_nascita.mm < 1 || cliente.data_nascita.mm > 12);
+    }while (!stricmp(cliente.username, "") || !stricmp(cliente.username, " "));
+
+    printf("\tInserisci la password del cliente: ");
+
+    do{
         
-        printf("\tInserisci l'anno di nascita (aaaa): ");
+        fflush(stdin);
 
-        do{ 
+        gets(cliente.password);
 
-            cliente.data_nascita.aaaa = checkInt();
+        if(!stricmp(cliente.password, "") || !stricmp(cliente.password, " ")){
 
-            if (cliente.data_nascita.aaaa < 1900 || cliente.data_nascita.aaaa > 2025){
+            printf("\n\tErrore! Inserire una password valida!\n\tInserisci la password del cliente: ");
 
-                printf(" Errore! Anno invalido, inserire anno compreso tra [1900-2025]: ");
+        }
 
-            }
-        } while (cliente.data_nascita.aaaa < 1900 || cliente.data_nascita.aaaa > 2025);
+    }while (!stricmp(cliente.password, "") || !stricmp(cliente.password, " "));
 
-        printf("\tInserisci sesso dell'cliente: ");
+    printf("\n\tINFORMAZIONI FINANZIARIE:\n");
 
-        do{
+    printf("\n\tInserisci la quantita' massima di denaro prelevabile per operazione (minimo %.2lf euro): ", MIN_PRELIEVOMAX);
 
-            fflush(stdin);
-
-            cliente.sesso = toupper(getchar());
-
-            if (!(cliente.sesso != 'M')){ 
-
-                controllo = 0;
-
-            }
-            else{
-
-                if ((cliente.sesso != 'M')){ 
-
-                    controllo = 0;
-
-                }
-
-                else{
-
-                    printf(" Errore! Valore invalido! Utilizzare [M/F]");
-
-                }
-            }
-
-        }while(controllo == 1);
-
-        controllo = 1;   
-
-        printf("\n\tCREDENZIALI D'ACCESSO:\n");
+    do{
         
-        printf("\n\tInserisci l'username del cliente: ");
-
-        do{
-            
-            fflush(stdin);
-
-            gets(cliente.username);
-
-            if(!stricmp(cliente.username, "") || !stricmp(cliente.username, " ")){
-
-                printf(" Errore! Inserire un username valido!\n Inserisci l'username del cliente: ");
-
-            }
-
-        }while (!stricmp(cliente.username, "") || !stricmp(cliente.username, " "));
-
-        printf("\tInserisci la password del cliente: ");
-
-        do{
-            
-            fflush(stdin);
-
-            gets(cliente.password);
-
-            if(!stricmp(cliente.password, "") || !stricmp(cliente.password, " ")){
-
-                printf("\n\tErrore! Inserire una password valida!\n\t Inserisci la password del cliente: ");
-
-            }
-
-        }while (!stricmp(cliente.password, "") || !stricmp(cliente.password, " "));
-
-        printf("\n\tINFORMAZIONI FINANZIARIE:\n");
-
-        printf("\n\tInserisci la quantita' massima di denaro prelevabile: ");
-
         cliente.prelievo_max = checkDouble();
-        
-        if(scriviClienteFILE(path, cliente)){return 1;} 
 
-    }else{return 0;}
+        if(cliente.prelievo_max < MIN_PRELIEVOMAX){printf("\n\tErrore! Inserire un importo maggiore o uguale a %.2lf!\n\tInserire nuovamente: ", MIN_PRELIEVOMAX);}
+
+    } while(cliente.prelievo_max < MIN_PRELIEVOMAX);
+    
+    if(creaFileMovimenti(pathMovimenti, cliente.numero_conto, banca) && scriviClienteFILE(path, cliente)){
+        
+        return 1;
+        
+    } else{
+
+        return 0;
+
+    }    
 
 }
 
@@ -1008,13 +988,13 @@ int getNextConto(char * path){ // ritorna un integer > 0 no indice!
     
 }
 
-int creaFileMovimenti(char * pathMovimenti, int numero_conto, char* banca){ //pathmovimenti sara' BANCHE\\MOVIMENTI_<banca>\\ al momento della chiamata
+int creaFileMovimenti(char * pathMovimenti, int numero_conto, char* banca){ //pathMovimenti sara' BANCHE\\MOVIMENTI_<banca>\\ al momento della chiamata
 
     FILE * flogico;
 
     char nomefile [70];
 
-    char conto [30];
+    char conto [6]; 
 
     strcpy(nomefile, pathMovimenti);            //nomefile::   BANCHE\\MOVIMENTI_<banca>\\
 
@@ -1025,8 +1005,6 @@ int creaFileMovimenti(char * pathMovimenti, int numero_conto, char* banca){ //pa
     itoa(numero_conto, conto, 10);
 
     strcat(nomefile, conto);                    //nomefile::   BANCHE\\MOVIMENTI_<banca>\\<banca>_<numero_conto>
-
-    //printf("\n\nnomefile in creaFileMovimenti: %s\n\n", nomefile); //debug
 
     if(!esisteFile(nomefile)){ //correggere!!
 
