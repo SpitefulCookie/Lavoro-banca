@@ -1,5 +1,4 @@
 #include <stdio.h>
-//#include <stdlib.h>
 #include <strings.h>
 #include <ctype.h> //toupper()
 #include <synchapi.h> //Sleep()
@@ -129,13 +128,13 @@ void main(int argc, char* argv[]){
 
     char pathMovimenti[100];
 
-    char bancaSelezionata[30]="\0", conferma = '\0';
+    char bancaSelezionata[30]="\0", conferma;
 
     int scelta, disconnesso = 1, fileok = 0;
 
-    long pos;
+    long pos; //variabile utilizzata in portale cliente
 
-    strcpy(pathBanca, PATH_SUFFIX);
+    strcpy(pathBanca, PATH_SUFFIX); //Inizializzo il mio pathBanca a BANCHE\
 
     mkdir(pathBanca); //Creo una directory "BANCHE" dove salverò tutti gli archivi bancari
     
@@ -153,11 +152,15 @@ void main(int argc, char* argv[]){
 
             case 1:
 
-                //do{
+                do{
 
                     system("cls");
 
-                    printf("\n\t\tLOGIN PORTALE IMPIEGATI\n\n\t Username: impiegato_05\n\t Password: ");
+                    printf("\n\t\t\tLOGIN PORTALE IMPIEGATI\n");
+
+                    printf("\t___________________________________________________\n");
+                    
+                    printf("\n\t\tUsername: impiegato_05\n\t\tPassword: ");
 
                     fflush(stdin);
 
@@ -167,17 +170,17 @@ void main(int argc, char* argv[]){
 
                         printf("\n\tLa password immessa e' errata!\n\t ");
 
-                        //Sleep(1400); //debug inserire nuovamente
+                        Sleep(1400); //dev inserire nuovamente
 
                     }
 
-                //}while(strcmp(password, PASSWORD)); //dev inserire nuovamente
+                }while(strcmp(password, PASSWORD)); //dev inserire nuovamente
 
                 printf("\n\tLogin effettuato, benvenuto impiegato_05!\n\t ");
 
                 disconnesso = 0;
 
-                //Sleep(1400); //dev inserire nuovamente
+                Sleep(1400); //dev inserire nuovamente
 
                 do{
 
@@ -280,21 +283,13 @@ void main(int argc, char* argv[]){
                                 
                                 conferma = getchar();
 
-                                if(toupper(conferma)== 'Y'){
+                                if(toupper(conferma) == 'Y'){
 
-                                    strcpy(bancaSelezionata, "\0");
+                                    resetBanche(pathBanca, bancaSelezionata, pathMovimenti);
 
-                                    strcpy(pathBanca, PATH_SUFFIX);
-                                    
-                                    strcpy(pathMovimenti, "\0");
+                                    fileok = 0; //il flag viene impostato a 0 poiche', qualora la creazione (eseguita qui sotto) non vadi a buon fine, il programma pensa che e' stato selezionato un file mentre in bancaSelezionata non vi e' nulla
 
-                                    fileok = 0; //il flag viene impostato a 0 poiche', qualora la creazione non vadi a buon fine, il programma pensa che e' stato selezionato un file mentre in bancaSelezionata non vi e' nulla
-
-                                } else{
-
-                                    break; //se non voglio creare un nuovo archivio interrompo il case
-
-                                }
+                                } else{break;} //se non voglio creare un nuovo archivio interrompo il case
 
                             } 
                                                                                                                           
@@ -306,9 +301,7 @@ void main(int argc, char* argv[]){
 
                             } else{
 
-                                printf("\tNon e' stato possibile creare l'archivio!");
-
-                                strcpy(bancaSelezionata, "\0"); //reimposto bancaSelezionata a valore nullo (il suo stato viene modificato nella funzione creaArchivio)
+                                resetBanche(NULL, bancaSelezionata, NULL); //reimposto bancaSelezionata a valore nullo (il suo stato viene modificato nella funzione creaArchivio)
 
                             }
 
@@ -452,7 +445,7 @@ void main(int argc, char* argv[]){
 
                 system("cls");
 
-                printf("\n\t\tLOGIN PORTALE CLIENTI");
+                printf("\n\t\t\tLOGIN PORTALE CLIENTI");
 
                 printf("\n\n\tElenco archivi bancari presenti:");
                 
@@ -463,6 +456,8 @@ void main(int argc, char* argv[]){
                     system("cls");
 
                     printf("\n\t\t\tLOGIN BANCA %s\n", strupr(bancaSelezionata));
+
+                    printf("\t___________________________________________________\n");
                     
                     if(loginCliente(pathBanca, &pos)){
 
@@ -482,7 +477,7 @@ void main(int argc, char* argv[]){
                             
                             system("cls");
 
-                            printf("\n\t\t   PORTALE CLIENTI\n");
+                            printf("\n\t\t\tPORTALE CLIENTI\n");
 
                             printf("\n\tSelezionare operazione da eseguire:\n\n\t\t[1] Effettua operazione\n\t\t[2] Visualizza movimenti\n\t\t[3] Visualizza informazioni conto\n\t\t[0] Logout\n\n\tScelta: ");
 
@@ -496,7 +491,7 @@ void main(int argc, char* argv[]){
 
                                     system("cls");
 
-                                    printf("\n\t\t   EFFETTUA OPERAZIONE BANCARIA\n");
+                                    printf("\n\t\t\tEFFETTUA OPERAZIONE BANCARIA\n");
 
                                     printf("\n\tSeleziona il tipo di operazione da eseguire\n\n\t\t[1] Prelievo \n\t\t[2] Deposito\n\n\tScelta: ");
 
@@ -558,7 +553,7 @@ void main(int argc, char* argv[]){
 
                                     system("cls");
 
-                                    printf("\n\t\t   VISUALIZZAZIONE INFORMAZIONI CONTO\n");
+                                    printf("\n\t\t\tVISUALIZZAZIONE INFORMAZIONI CONTO\n");
 
                                     visualizzaRecordStruct(cliente_Letto);
 
@@ -906,7 +901,9 @@ void datasystem(Data *data){
 void resetBanche(char * pathBanca, char * bancaSelezionata, char * pathMovimenti){
 
     if(pathBanca!=NULL){strcpy(pathBanca, PATH_SUFFIX);}
+
     if(bancaSelezionata!=NULL){strcpy(bancaSelezionata, "\0");}
+
     if(pathMovimenti!=NULL){strcpy(pathMovimenti, "\0");}
 
 }
@@ -935,7 +932,7 @@ int loginCliente(char * pathBanca, long * pos){
 
     }else{
     
-        printf("\n\tUsername: ");
+        printf("\n\t\tUsername: ");
 
         fflush(stdin);
         
@@ -949,7 +946,7 @@ int loginCliente(char * pathBanca, long * pos){
 
             fread(&clienteLetto, sizeof(Cliente), 1, flogico);
 
-            printf("\tPassword: ");
+            printf("\t\tPassword: ");
 
             fflush(stdin);
 
@@ -1107,7 +1104,7 @@ int getBanca(char * pathBanca, char * pathMovimenti, char * banca){
 
         if((j+2)%2==0){printf("\n\t\t");}else{printf("\t\t");}
 
-        printf("[%2d] %20s", j+1, listaBanche[j]);
+        printf("[%2d] %18s", j+1, listaBanche[j]);
 
     }
 
@@ -1145,7 +1142,7 @@ int creaArchivio(char * path, char* pathMovimenti, char * banca){
 
         system("cls");
 
-        printf("\n\t\t   CREAZIONE ARCHIVIO BANCARIO\n");
+        printf("\n\t\t\t      PORTALE IMPIEGATI\n\t\t\tCREAZIONE ARCHIVIO BANCARIO\n");
 
         printf("\n\tInserire il nome dell'archivio da creare: "); //bisognerebbe forzare una lunghezza di almeno 3 caratteri
 
@@ -1193,7 +1190,13 @@ int creaArchivio(char * path, char* pathMovimenti, char * banca){
 
                 }
                 
-            } else{return 0;}
+            } else{
+
+                printf("\tOperazione annullata!");
+
+                return 0;
+
+            }
 
         }
 
