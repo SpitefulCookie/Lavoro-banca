@@ -89,8 +89,6 @@ void menuRicerca(char *);
 
 int visualizzaRecordPosizione(char * , long );
 
-void menuRicerca(char * );
-
 void menuVisualizzazioneMovimenti(char *);
 
 long ricercaUsername(char * , char * );
@@ -131,7 +129,7 @@ void main(int argc, char* argv[]){
 
     char pathMovimenti[100];
 
-    char bancaSelezionata[30]="\0", conferma;
+    char bancaSelezionata[50]="\0", conferma;
 
     int scelta, disconnesso = 1, fileok = 0;
 
@@ -173,17 +171,17 @@ void main(int argc, char* argv[]){
 
                         printf("\n\tLa password immessa e' errata!\n\t ");
 
-                        Sleep(1400); //dev inserire nuovamente
+                        Sleep(1400); //
 
                     }
 
-                }while(strcmp(password, PASSWORD)); //dev inserire nuovamente
+                }while(strcmp(password, PASSWORD)); //
 
                 printf("\n\tLogin effettuato, benvenuto impiegato_05!\n\t ");
 
                 disconnesso = 0;
 
-                Sleep(1400); //dev inserire nuovamente
+                Sleep(1400); //
 
                 do{
 
@@ -230,6 +228,10 @@ void main(int argc, char* argv[]){
 
                                 } else{
 
+                                    printf("\n\tOperazione annullata!");
+
+                                    Sleep(1400);
+                                    
                                     break;
 
                                 }
@@ -300,15 +302,13 @@ void main(int argc, char* argv[]){
 
                                 fileok = 1;
 
-                                printf("\tL'archivio bancario \"%s\" e' stato creato con successo!", bancaSelezionata);
+                                printf("\tL'archivio bancario \"%s\" e' stato creato con successo!\n\t", bancaSelezionata);
 
                             } else{
 
                                 resetBanche(NULL, bancaSelezionata, NULL); //reimposto bancaSelezionata a valore nullo (il suo stato viene modificato nella funzione creaArchivio)
 
                             }
-
-                            printf("\n\t");
 
                             system("pause");
 
@@ -344,23 +344,21 @@ void main(int argc, char* argv[]){
 
                                 if(!visualizzaArchivio(pathBanca)){printf("\n\tL'archivio selezionato non contiene nessun record");}
 
-                                printf("\n\t");
-
                             }else{
 
-                                printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!\n\t");
+                                printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!");
 
                             }
 
+                            printf("\n\t");
+                            
                             system("pause");
 
                             break;
 
                         case 5:
 
-                            if (fileok){menuRicerca(pathBanca);} else{printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!\n\t");}
-
-                            system("pause");
+                            if (fileok){menuRicerca(pathBanca);} else{printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!\n\t"); system("pause");}
 
                             break;
 
@@ -629,6 +627,178 @@ void main(int argc, char* argv[]){
 
 // UTILITY
 
+void generaPathMovimenti(char * pathMovimenti, char * banca, int n_conto){ //Passando 0 come ultimo parametro, la funzione si limiterà a generare un path nel formato BANCHE\\MOVIMENTI_<banca>\\ utile per la generazione di un nuovo archivio
+
+    
+    strcpy(pathMovimenti, PATH_SUFFIX);            //pathMovimenti::    BANCHE\  
+    
+    strcat(pathMovimenti, "MOVIMENTI_");           //pathMovimenti::    BANCHE\MOVIMENTI_
+
+    strcat(pathMovimenti, banca);                  //pathMovimenti::    BANCHE\MOVIMENTI_<banca>
+
+    strcat(pathMovimenti, "\\");                   //pathMovimenti::    BANCHE\MOVIMENTI_<banca>\ 
+
+    if(n_conto){
+
+        strcat(pathMovimenti, banca);               //pathMovimenti::    BANCHE\MOVIMENTI_<banca>\<banca>
+
+        strcat(pathMovimenti, "_");                 //pathMovimenti::    BANCHE\MOVIMENTI_<banca>\<banca>_
+
+        char buffer [50];
+
+        itoa(n_conto, buffer, 10);
+
+        strcat(pathMovimenti, buffer);              //pathMovimenti::    BANCHE\MOVIMENTI_<banca>\<banca>_<n_conto>
+        
+    }
+    
+}
+
+int checkInt(void){
+
+    int var, isInt = 0;
+
+	do{
+        
+        fflush(stdin);
+        
+        if (scanf("%d", &var)){
+
+            isInt = 1;
+
+        } else {
+
+            printf("\n\tValore invalido, inserire un numero intero! Inserire nuovamente: ");
+
+        }
+        
+	} while (!isInt);
+
+	return var;
+   
+}
+
+double checkDouble(void){
+
+    double var;
+
+    int isDouble;
+
+	do{
+        
+        fflush(stdin);
+        
+        if (scanf("%lf", &var)){
+
+            isDouble = 1;
+
+        }
+        else {
+
+            printf("\n\tValore invalido, inserire un numero decimale valido! Inserire nuovamente: ");
+
+        }
+        
+	} while (!isDouble);
+	
+	return var;
+
+}
+
+void datasystem(Data *data){
+
+    struct tm *now= NULL;
+
+    time_t t;
+
+    time(&t);
+
+    now = localtime(&t);
+
+    data->gg=now->tm_mday;
+
+    data->mm=now->tm_mon+1;
+
+    data->aaaa=now->tm_year+1900;
+    
+}
+
+void resetBanche(char * pathBanca, char * bancaSelezionata, char * pathMovimenti){ //Passare NULL come parametro dove il reset non e' necessario
+
+    if(pathBanca!=NULL){strcpy(pathBanca, PATH_SUFFIX);}
+
+    if(bancaSelezionata!=NULL){strcpy(bancaSelezionata, "\0");}
+
+    if(pathMovimenti!=NULL){strcpy(pathMovimenti, "\0");}
+
+}
+
+// OPERAZIONI SU FILES
+
+int loginCliente(char * pathBanca, long * pos){
+
+    FILE * flogico;
+
+    Cliente clienteLetto;
+
+    char bufferUsername [50];
+
+    char bufferPassword [50];
+
+    flogico = fopen(pathBanca, "rb");
+
+    fseek(flogico, 0, SEEK_END);
+
+    if(!ftell(flogico)){
+
+        printf("\n\tL'archivio selezionato risulta essere vuoto\n\t");
+
+        system("pause");
+
+    }else{
+    
+        printf("\n\t\tUsername: ");
+
+        fflush(stdin);
+        
+        gets(bufferUsername);
+
+        *pos = ricercaUsername(pathBanca, bufferUsername); //il valore di pos varierà anche nel main
+
+        if(*pos!=-1){
+
+            rewind(flogico);
+
+            fread(&clienteLetto, sizeof(Cliente), 1, flogico);
+
+            printf("\t\tPassword: ");
+
+            fflush(stdin);
+
+            gets(bufferPassword);
+
+            if(!strcmp(clienteLetto.username, bufferUsername) && !strcmp(clienteLetto.password, bufferPassword)){
+
+                fclose(flogico);
+
+                return 1;
+
+            }else{printf("\n\tLa password immessa e' errata!\n\t"); system("pause"); return 0;}
+
+        } else {
+
+            printf("\n\tL'username inserito non e' presente nell'archivio\n\t");
+
+            system("pause");
+
+            return 0;
+
+        }
+
+    }
+
+}
+
 int caricaCliente(char * path, char* pathMovimenti , char * banca){ //pathMovimenti deve essere BANCHE\\MOVIMENTI_<banca> 
     
     Cliente cliente;
@@ -782,178 +952,6 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){ //pathMovime
 
 }
 
-void generaPathMovimenti(char * pathMovimenti, char * banca, int n_conto){ //Passando 0 come ultimo parametro, la funzione si limiterà a generare un path nel formato BANCHE\\MOVIMENTI_<banca>\\ utile per la generazione di un nuovo archivio
-
-    
-    strcpy(pathMovimenti, PATH_SUFFIX);            //pathMovimenti::    BANCHE\\  
-    
-    strcat(pathMovimenti, "MOVIMENTI_");           //pathMovimenti::    BANCHE\\MOVIMENTI_
-
-    strcat(pathMovimenti, banca);                  //pathMovimenti::    BANCHE\\MOVIMENTI_<banca>
-
-    strcat(pathMovimenti, "\\");                   //pathMovimenti::    BANCHE\\MOVIMENTI_<banca>\\ 
-
-    if(n_conto){
-
-        strcat(pathMovimenti, banca);               //pathMovimenti::    BANCHE\\MOVIMENTI_<banca>\\<banca>
-
-        strcat(pathMovimenti, "_");                 //pathMovimenti::    BANCHE\\MOVIMENTI_<banca>\\<banca>_
-
-        char buffer [50];
-
-        itoa(n_conto, buffer, 10);
-
-        strcat(pathMovimenti, buffer);              //pathMovimenti::    BANCHE\\MOVIMENTI_<banca>\\<banca>_<n_conto>
-        
-    }
-    
-}
-
-int checkInt(void){
-
-    int var, isInt = 0;
-
-	do{
-        
-        fflush(stdin);
-        
-        if (scanf("%d", &var)){
-
-            isInt = 1;
-
-        } else {
-
-            printf("\n\tValore invalido, inserire un numero intero! Inserire nuovamente: ");
-
-        }
-        
-	} while (!isInt);
-
-	return var;
-   
-}
-
-double checkDouble(void){
-
-    double var;
-
-    int isDouble;
-
-	do{
-        
-        fflush(stdin);
-        
-        if (scanf("%lf", &var)){
-
-            isDouble = 1;
-
-        }
-        else {
-
-            printf("\n\tValore invalido, inserire un numero decimale valido! Inserire nuovamente: ");
-
-        }
-        
-	} while (!isDouble);
-	
-	return var;
-
-}
-
-void datasystem(Data *data){
-
-    struct tm *now= NULL;
-
-    time_t t;
-
-    time(&t);
-
-    now = localtime(&t);
-
-    data->gg=now->tm_mday;
-
-    data->mm=now->tm_mon+1;
-
-    data->aaaa=now->tm_year+1900;
-    
-}
-
-void resetBanche(char * pathBanca, char * bancaSelezionata, char * pathMovimenti){
-
-    if(pathBanca!=NULL){strcpy(pathBanca, PATH_SUFFIX);}
-
-    if(bancaSelezionata!=NULL){strcpy(bancaSelezionata, "\0");}
-
-    if(pathMovimenti!=NULL){strcpy(pathMovimenti, "\0");}
-
-}
-
-// OPERAZIONI SU FILES
-
-int loginCliente(char * pathBanca, long * pos){
-
-    FILE * flogico;
-
-    Cliente clienteLetto;
-
-    char bufferUsername [50];
-
-    char bufferPassword [50];
-
-    flogico = fopen(pathBanca, "rb");
-
-    fseek(flogico, 0, SEEK_END);
-
-    if(!ftell(flogico)){
-
-        printf("\n\tL'archivio selezionato risulta essere vuoto\n\t");
-
-        system("pause");
-
-    }else{
-    
-        printf("\n\t\tUsername: ");
-
-        fflush(stdin);
-        
-        gets(bufferUsername);
-
-        *pos = ricercaUsername(pathBanca, bufferUsername); //il valore di pos varierà anche nel main
-
-        if(*pos!=-1){
-
-            rewind(flogico);
-
-            fread(&clienteLetto, sizeof(Cliente), 1, flogico);
-
-            printf("\t\tPassword: ");
-
-            fflush(stdin);
-
-            gets(bufferPassword);
-
-            if(!strcmp(clienteLetto.username, bufferUsername) && !strcmp(clienteLetto.password, bufferPassword)){
-
-                fclose(flogico);
-
-                return 1;
-
-            }else{printf("\n\tLa password immessa e' errata!\n\t"); system("pause"); return 0;}
-
-        } else {
-
-            printf("\n\tL'username inserito non e' presente nell'archivio\n\t");
-
-            system("pause");
-
-            return 0;
-
-        }
-
-    }
-
-}
-
 int getNextConto(char * path){ // ritorna un integer > 0 no indice!
 
     FILE * flogico;
@@ -1056,7 +1054,7 @@ int getBanca(char * pathBanca, char * pathMovimenti, char * banca){
 
         if(strcmp(record->d_name,".")&& strcmp(record->d_name,"..")){ //esclude '.' e ".." 
 
-            if(strncmp(record->d_name,"MOVIMENTI_", 10)){
+            if(strncmp(record->d_name,"MOVIMENTI_", 10)){ // Se i primi 10 caratteri del nome sono DIVERSI da "MOVIMENTI_" (cartella MOVIMENTI_<banca>) ho trovato quello che volevo
 
                 strcpy(listaBanche[i], record->d_name);
 
@@ -1110,11 +1108,11 @@ int getBanca(char * pathBanca, char * pathMovimenti, char * banca){
 
 }
 
-int creaArchivio(char * path, char* pathMovimenti, char * banca){
+int creaArchivio(char * pathBanca, char* pathMovimenti, char * banca){
 
-    char conferma = '\0';
+    char conferma;
 
-    char buffer[30];
+    char buffer[100];
     
     do{ 
 
@@ -1122,13 +1120,13 @@ int creaArchivio(char * path, char* pathMovimenti, char * banca){
 
         printf("\n\t\t\t      PORTALE IMPIEGATI\n\t\t\tCREAZIONE ARCHIVIO BANCARIO\n");
 
-        printf("\n\tInserire il nome dell'archivio da creare: "); //bisognerebbe forzare una lunghezza di almeno 3 caratteri
+        printf("\n\tInserire il nome dell'archivio da creare: "); 
 
         fflush(stdin);
         
         gets(buffer);
 
-        if(buffer == " " || buffer == "\n" || buffer == "\0"){ //controllo che non sia stato inserito un nome "vuoto" <<-- verificare che funzioni correttamente (non funziona!!)
+        if(buffer == " " || buffer == "\n" || buffer == "\0"){ //controllo che non sia stato inserito un nome "vuoto" <<-- non funziona!!
 
             printf("\n\tErrore! inserire un valore valido!");
 
@@ -1142,21 +1140,15 @@ int creaArchivio(char * path, char* pathMovimenti, char * banca){
 
             if(toupper(conferma) == 'Y'){
 
-                if(creaFilePath(buffer, path)){ 
+                if(creaFilePath(buffer, pathBanca)){ 
 
-                    strcpy(banca, buffer);          //  Copio il nome dell'archivio all'interno della variabile "bancaSelezionata" nel main
+                    strcpy(banca, buffer);                              //  Copio il nome desiderato in bancaSelezionata nel main
 
-                    strcat(path, banca);
+                    strcat(pathBanca, buffer);                          //  pathBanca:: BANCHE\<banca>
 
-                    strcpy(buffer, PATH_SUFFIX);    //buffer::    BANCHE\\  <- sovrascrivo buffer e gli assegno il mio path (BANCHE\\)
+                    generaPathMovimenti(buffer, banca, 0);              //  buffer::    BANCHE\MOVIMENTI_<banca>\ 
 
-                    strcat(buffer, "MOVIMENTI_");   //buffer::    BANCHE\\MOVIMENTI_
-
-                    strcat(buffer, banca);          //buffer::    BANCHE\\MOVIMENTI_<banca>
-
-                    strcat(buffer, "\\");           //buffer::    BANCHE\\MOVIMENTI_<banca>\\ 
-
-                    if(!mkdir(buffer)){strcpy(pathMovimenti, buffer);}   //Creo una directory che conterrà tutti i miei file movimenti per la banca
+                    if(!mkdir(buffer)){strcpy(pathMovimenti, buffer);}  //  Creo una directory che conterrà tutti i miei file movimenti per la banca
                     
                     return 1;
 
@@ -1178,7 +1170,7 @@ int creaArchivio(char * path, char* pathMovimenti, char * banca){
 
         }
 
-    }while(toupper(conferma)!='Y'&& toupper(conferma)!='N'); 
+    }while(toupper(conferma)!='Y' && toupper(conferma)!='N'); 
 
     return 0;
 
@@ -1225,33 +1217,22 @@ int creaFilePath(char * nomefisico, char * path){
         return 0;
 
     }
+
 }
 
 int esisteFile(char * path){
     
     FILE * flogico;
     
-    //char buffer[40];
-
-    //strcpy(buffer, path);   
-
-    //creo il path al file e successivamente lo apro in modalita' rb, se esiste ritorno 1
-
     flogico = fopen(path, "rb");
     
-    if(flogico == NULL){ //flogico avra' valore null se NON ho trovato il file
+    if(flogico != NULL){ // flogico avra' valore null se NON ho trovato il file
 
         fclose(flogico);
-
-        return 0;
-
-    }else{
-
-        fclose(flogico);
-
+        
         return 1;
 
-    }
+    } else {return 0;}
 
 }
 
@@ -1273,7 +1254,7 @@ Cliente getCliente(char * pathBanca, long pos){
 
 }
 
-int setCliente(char * pathBanca, Cliente cliente){
+int setCliente(char * pathBanca, Cliente cliente){ // Salva il cliente passato nell'archivio eseguendo la ricerca in quest'ultimo tramite il numero di conto (identificatore univoco)
 
     FILE * flogico;
 
@@ -1370,9 +1351,9 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
                                 fseek(fileMovimenti, 0, SEEK_END); 
                                 
                                 /*
-                                * Non ho idea del motivo per cui la scrittura su file non funzioni senza questo fseek i valori 
-                                * del puntatore prima e dopo l'esecuzione restano gli stessi eppure senza quest'istruzione 
-                                * il codice non funziona. Errno non restituisce alcun errore.
+                                * Non ho idea del motivo per cui la scrittura su file non funzioni senza questo fseek. I valori 
+                                * del puntatore prima e dopo l'esecuzione restano gli stessi eppure senza di essa il codice non funziona. 
+                                * Errno non restituisce alcun errore.
                                 * Possibile causa in:
                                 * 
                                 *  if(!fseek(fileMovimenti, -(long)sizeof(Movimenti), SEEK_END)) ?
@@ -1732,7 +1713,7 @@ long ricercaUsername(char * pathBanca, char * username){
 
     Cliente cliente_letto;
 
-    long pos =- 1;
+    long pos = -1;
 
     flogico = fopen(pathBanca, "rb");
 
@@ -1740,7 +1721,7 @@ long ricercaUsername(char * pathBanca, char * username){
 
     while(!feof(flogico)){
 
-        if(!strcasecmp(cliente_letto.username, username)){ //fix? Con full caps la funzione non ritorna -1
+        if(!strcasecmp(cliente_letto.username, username)){ // !(strcmp(cliente_letto.username, username) <- La discriminazione tra lower e uppercase non funziona?
 
             pos = ftell(flogico) - sizeof(Cliente); 
 
@@ -1756,14 +1737,14 @@ long ricercaUsername(char * pathBanca, char * username){
 
 }
 
-long ricercaNominativo(char * pathBanca, char * nome, char * cognome){
+long ricercaNominativo(char * pathBanca, char * nome, char * cognome){ //dopo aver creato un nuovo archivio il programma va in loop
 
     FILE * flogico;
 
     Cliente cliente_letto;
 
     long pos =- 1;
-
+    
     flogico = fopen(pathBanca, "rb");
 
     fread(&cliente_letto, sizeof(Cliente), 1, flogico);
@@ -1891,23 +1872,30 @@ int visualizzaRecordPosizione(char * pathBanca, long pos){
 
     FILE * flogico;
 
-    Cliente client_letto;
+    Cliente cliente_letto;
 
-    flogico = fopen(pathBanca, "rb");
+    if(esisteFile(pathBanca)){
 
-    if(flogico!=NULL){
+        /* 
+         *  In teoria non sarebbe necesario effettuare questo controllo in quanto viene eseguito un controllo a monte 
+         *  dell'esistenza del file, tuttavia questa funzione mi permette di verificare implicitamente qualora il file risulti
+         *  aperto in qualche altra porzione di codice
+         * 
+         */
+
+        flogico = fopen(pathBanca, "rb");
 
         fseek(flogico, pos, SEEK_SET);
 
-        fread(&client_letto, sizeof(Cliente), 1, flogico);
+        fread(&cliente_letto, sizeof(Cliente), 1, flogico);
 
-        visualizzaRecordStruct(client_letto);
+        visualizzaRecordStruct(cliente_letto);
 
         fclose(flogico);
 
         return 1;
 
-    } else {return 0;}
+    } else {return -1;}
 
 }
 
@@ -1919,27 +1907,44 @@ int visualizzaArchivio(char * path){
 
     int haRecord = 0;
 
-    system("cls");
+    if(esisteFile(path)){ 
+        
+        /* 
+         *  In teoria non sarebbe necesario effettuare questo controllo in quanto viene eseguito un controllo a monte 
+         *  dell'esistenza del file, tuttavia questa funzione mi permette di verificare implicitamente qualora il file risulti
+         *  aperto in qualche altra porzione di codice
+         * 
+         */
 
-    printf("\n\t\t   VISUALIZZAZIONE ARCHIVIO BANCARIO\n");
-    
-    flogico = fopen(path, "rb");
+        system("cls");
 
-    fread(&cliente_letto, sizeof(Cliente), 1, flogico);
-
-    while(!feof(flogico)){
-
-        haRecord = 1;
-
-        visualizzaRecordStruct(cliente_letto);
+        printf("\n\t\t   VISUALIZZAZIONE ARCHIVIO BANCARIO\n");
+        
+        flogico = fopen(path, "rb");
 
         fread(&cliente_letto, sizeof(Cliente), 1, flogico);
 
+        while(!feof(flogico)){
+
+            haRecord = 1;
+
+            visualizzaRecordStruct(cliente_letto);
+
+            fread(&cliente_letto, sizeof(Cliente), 1, flogico);
+
+        }
+
+        fclose(flogico);
+
+        return haRecord;
+
+    } else{
+
+        printf("\n\tErrore! Impossibile visualizzare l'archvio");
+
+        return -1;
+
     }
-
-    fclose(flogico);
-
-    return haRecord;
 
 }
 
@@ -2067,27 +2072,42 @@ int visualizzaMovimenti(char * pathMovimenti){
 
     int haRecord = 0;
 
-    filemovimenti = fopen(pathMovimenti, "rb");
+    if(esisteFile(pathMovimenti)){
 
-    fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti);
+        /* 
+         *  In teoria non sarebbe necesario effettuare questo controllo in quanto viene eseguito un controllo a monte 
+         *  dell'esistenza del file, tuttavia questa funzione mi permette di verificare implicitamente qualora il file risulti
+         *  aperto in qualche altra porzione di codice
+         * 
+         */
 
-    if(!feof(filemovimenti)){
+        filemovimenti = fopen(pathMovimenti, "rb");
 
-        do{ 
+        fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti);
 
-            printMovimento(movimentoLetto);
+        if(!feof(filemovimenti)){
 
-            haRecord = 1;
+            do{ 
 
-            fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti);
+                printMovimento(movimentoLetto);
 
-        }while(!feof(filemovimenti));
+                haRecord = 1;
 
-    }else{printf("\n\tNon vi sono movimenti presenti all'interno del conto");}
-    
-    fclose(filemovimenti);
+                fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti);
 
-    return haRecord;
+            }while(!feof(filemovimenti));
+
+        }else{printf("\n\tNon vi sono movimenti presenti all'interno del conto");}
+        
+        fclose(filemovimenti);
+
+        return haRecord;
+
+    } else{
+
+        return -1;
+
+    }
 
 }
 
@@ -2120,80 +2140,94 @@ int visualizzaMovimentiMese(char * pathMovimenti, Data data){ // aggiungere cont
 
     }
 
-    filemovimenti = fopen(pathMovimenti, "rb");
+    if(esisteFile(pathMovimenti)){
 
-    fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti); 
+        /* 
+         *  In teoria non sarebbe necesario effettuare questo controllo in quanto viene eseguito un controllo a monte 
+         *  dell'esistenza del file, tuttavia questa funzione mi permette di verificare implicitamente qualora il file risulti
+         *  aperto in qualche altra porzione di codice
+         * 
+         */
     
-    /*
-     * Poiche' feof() non funziona senza effettuare una lettura prima sono costretto a leggere il primo record.
-     * Un alternativa sarebbe stata if(fseek(filemovimenti, -(long)sizeof(Movimenti), SEEK_END)) come nella
-     * funzione eseguiOperazione tuttavia, come gia' menzionato in un commento precedente, l'uso di questa istruzione
-     * sembrerebbe avere dei comportamenti a me anomali che impediscono il corretto funzionamento di fwrite().
-     * 
-     */
+        filemovimenti = fopen(pathMovimenti, "rb");
 
-    if(!feof(filemovimenti)){
+        fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti); 
+        
+        /*
+        * Poiche' feof() non funziona senza effettuare una lettura prima sono costretto a leggere il primo record.
+        * Un alternativa sarebbe stata if(fseek(filemovimenti, -(long)sizeof(Movimenti), SEEK_END)) come nella
+        * funzione eseguiOperazione tuttavia, come gia' menzionato in un commento precedente, l'uso di questa istruzione
+        * sembrerebbe avere dei comportamenti a me anomali che impediscono il corretto funzionamento di fwrite().
+        * 
+        */
 
-        fseek(filemovimenti, -(long)sizeof(Movimenti), SEEK_END);
+        if(!feof(filemovimenti)){
 
-        fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti); //leggo l'ultimo record nel file
+            fseek(filemovimenti, -(long)sizeof(Movimenti), SEEK_END);
 
-        ultimoRecordArchivio = movimentoLetto.numero_operazione;
+            fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti); //leggo l'ultimo record nel file
 
-        rewind(filemovimenti);
+            ultimoRecordArchivio = movimentoLetto.numero_operazione;
 
-        fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti); //leggo nuovamente il primo record
+            rewind(filemovimenti);
+
+            fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti); //leggo nuovamente il primo record
+
+        } else{
+
+            printf("\n\tNon sono presenti movimenti all'interno del file.");
+
+            return trovato;
+
+        }
+
+        printf("\n\tMovimenti effettuati nel mese di %s %d:\n", mese, data.aaaa); 
+        
+        while(ultimoRecordLetto<ultimoRecordArchivio){
+            
+            while(!feof(filemovimenti) && i < 10){
+
+                if(movimentoLetto.data_movimento.mm == data.mm && movimentoLetto.data_movimento.aaaa ==data.aaaa){
+
+                    listaMovimenti[i] = movimentoLetto;
+
+                    i++;
+
+                    trovato = 1;
+
+                }
+
+                ultimoRecordLetto = movimentoLetto.numero_operazione;
+
+                fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti);
+
+            }
+            
+            if(i){
+
+                for(j = 0; j < i; j++){printMovimento(listaMovimenti[j]);}
+
+                i = 0;
+
+            } 
+        
+        } 
+
+        if(!trovato){
+
+            printf("\n\tNon sono stati trovati movimenti che corrispondevano ai criteri di ricerca.");
+
+            return trovato;
+
+        }
+
+        return trovato;
 
     } else{
 
-        printf("\n\tNon sono presenti movimenti all'interno del file.");
-
-        return trovato;
+        return -1;
 
     }
-
-    printf("\n\tMovimenti effettuati nel mese di %s %d:\n", mese, data.aaaa); 
-     
-    while(ultimoRecordLetto<ultimoRecordArchivio){
-        
-        while(!feof(filemovimenti) && i < 10){
-
-            if(movimentoLetto.data_movimento.mm == data.mm && movimentoLetto.data_movimento.aaaa ==data.aaaa){
-
-                listaMovimenti[i] = movimentoLetto;
-
-                i++;
-
-                trovato = 1;
-
-            }
-
-            ultimoRecordLetto = movimentoLetto.numero_operazione;
-
-            fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti);
-
-        }
-        
-        if(i){
-
-            for(j = 0; j < i; j++){printMovimento(listaMovimenti[j]);}
-
-            i = 0;
-
-        } 
-       
-    } 
-
-    if(!trovato){
-
-        printf("\n\tNon sono stati trovati movimenti che corrispondevano ai criteri di ricerca.");
-
-        return trovato;
-
-    }
-
-    return trovato;
-
 }
 
 int visualizzaMovimentiTipo(char * pathMovimenti, char * tipo){
@@ -2206,78 +2240,93 @@ int visualizzaMovimentiTipo(char * pathMovimenti, char * tipo){
 
     int ultimoRecordLetto = 0, i = 0, ultimoRecordArchivio, j, trovato = 0;
 
-    filemovimenti = fopen(pathMovimenti, "rb");
+    if(esisteFile(pathMovimenti)){
 
-    fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti); 
+        /* 
+         *  In teoria non sarebbe necesario effettuare questo controllo in quanto viene eseguito un controllo a monte 
+         *  dell'esistenza del file, tuttavia questa funzione mi permette di verificare implicitamente qualora il file risulti
+         *  aperto in qualche altra porzione di codice
+         * 
+         */
     
-    /*
-    * Poiche' feof() non funziona senza effettuare una lettura prima sono costretto a leggere il primo record.
-    * Un alternativa sarebbe stata if(fseek(filemovimenti, -(long)sizeof(Movimenti), SEEK_END)) come nella
-    * funzione eseguiOperazione tuttavia, come gia' menzionato in un commento precedente, l'uso di questa istruzione
-    * sembrerebbe avere dei comportamenti a me anomali che impediscono il corretto funzionamento di fwrite().
-    * 
-    */
+        filemovimenti = fopen(pathMovimenti, "rb");
 
-    if(!feof(filemovimenti)){
+        fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti); 
+        
+        /*
+        * Poiche' feof() non funziona senza effettuare una lettura prima sono costretto a leggere il primo record.
+        * Un alternativa sarebbe stata if(fseek(filemovimenti, -(long)sizeof(Movimenti), SEEK_END)) come nella
+        * funzione eseguiOperazione tuttavia, come gia' menzionato in un commento precedente, l'uso di questa istruzione
+        * sembrerebbe avere dei comportamenti a me anomali che impediscono il corretto funzionamento di fwrite().
+        * 
+        */
 
-        fseek(filemovimenti, -(long)sizeof(Movimenti), SEEK_END);
+        if(!feof(filemovimenti)){
 
-        fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti); //leggo l'ultimo record nel file
+            fseek(filemovimenti, -(long)sizeof(Movimenti), SEEK_END);
 
-        ultimoRecordArchivio = movimentoLetto.numero_operazione;
+            fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti); //leggo l'ultimo record nel file
 
-        rewind(filemovimenti);
+            ultimoRecordArchivio = movimentoLetto.numero_operazione;
 
-        fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti); //leggo nuovamente il primo record
+            rewind(filemovimenti);
+
+            fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti); //leggo nuovamente il primo record
+
+        } else{
+
+            printf("\n\tNon sono presenti movimenti all'interno del file.");
+
+            return trovato;
+
+        }
+
+        if(!strcmp(tipo, "Prelievo")){printf("\n\tPrelievi effettuati: \n");}else{printf("\n\tDepositi effettuati: \n");}
+        
+        while(ultimoRecordLetto<ultimoRecordArchivio){
+            
+            while(!feof(filemovimenti) && i < 10){
+
+                if(!strcmp(movimentoLetto.tipo, tipo)){
+
+                    listaMovimenti[i] = movimentoLetto;
+
+                    i++;
+
+                    trovato = 1;
+
+                }
+
+                ultimoRecordLetto = movimentoLetto.numero_operazione;
+
+                fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti);
+
+            }
+            
+            if(i){
+
+                for(j = 0; j < i; j++){printMovimento(listaMovimenti[j]);}
+
+                i = 0;
+
+            } 
+        
+        } 
+
+        if(!trovato){
+
+            printf("\n\tNon sono stati trovati movimenti che corrispondevano ai criteri di ricerca.");
+
+            return trovato;
+
+        }
+
+        return trovato;
 
     } else{
 
-        printf("\n\tNon sono presenti movimenti all'interno del file.");
-
-        return trovato;
+        return -1;
 
     }
-
-    if(!strcmp(tipo, "Prelievo")){printf("\n\tPrelievi effettuati: \n");}else{printf("\n\tDepositi effettuati: \n");}
-    
-    while(ultimoRecordLetto<ultimoRecordArchivio){
-        
-        while(!feof(filemovimenti) && i < 10){
-
-            if(!strcmp(movimentoLetto.tipo, tipo)){
-
-                listaMovimenti[i] = movimentoLetto;
-
-                i++;
-
-                trovato = 1;
-
-            }
-
-            ultimoRecordLetto = movimentoLetto.numero_operazione;
-
-            fread(&movimentoLetto, sizeof(Movimenti), 1, filemovimenti);
-
-        }
-        
-        if(i){
-
-            for(j = 0; j < i; j++){printMovimento(listaMovimenti[j]);}
-
-            i = 0;
-
-        } 
-    
-    } 
-
-    if(!trovato){
-
-        printf("\n\tNon sono stati trovati movimenti che corrispondevano ai criteri di ricerca.");
-
-        return trovato;
-
-    }
-
-    return trovato;
 
 }
