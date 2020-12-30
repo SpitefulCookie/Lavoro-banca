@@ -11,7 +11,11 @@
 #define DEPOSITO_MINIMO 0.01
 #define ANNO_MAX 2025
 #define ANNO_MIN 1900
-#define MIN_PRELIEVOMAX 500.00 
+#define MIN_PRELEVABILE 500.00 
+#define GIORNO_MIN 1
+#define GIORNO_MAX 31
+#define MESE_MIN 1
+#define MESE_MAX 12
 
                                          //      TIPI
 
@@ -51,7 +55,7 @@ typedef struct Movimenti {
 
     int numero_operazione;
     
-    char tipo[15]; // "prelievo" / "versamento"
+    char tipo[15]; // "Prelievo" / "Versamento"
 
     Data data_movimento;
 
@@ -143,7 +147,12 @@ void main(int argc, char* argv[]){
 
         system("cls");
 
-        printf("\n\t\t   SISTEMA BANCARIO\n\n\tSelezionare il portale a cui accedere:\n\n\t\t[1] Portale Impiegati\n\t\t[2] Portale Clienti\n\t\t[0] Termine programma\n\n\tScelta: ");
+        printf("\n\t\t   SISTEMA BANCARIO\n\n\t"
+                "Selezionare il portale a cui accedere:\n\n\t\t"
+                "[1] Portale Impiegati\n\t\t"
+                "[2] Portale Clienti\n\t\t"
+                "[0] Termine programma\n\n\t"
+                "Scelta: ");
 
         fflush(stdin);
 
@@ -198,7 +207,17 @@ void main(int argc, char* argv[]){
 
                     }
 
-                    printf("\n\tSelezionare operazione da eseguire:\n\n\t\t[1] Apri archivio bancario\n\t\t[2] Crea nuovo archivio\n\t\t[3] Inserisci nuovo cliente nell'archivio\n\t\t[4] Visualizza i record nell'archivio\n\t\t[5] Ricerca cliente nell'archivio\n\t\t[6] Visualizza movimenti conto corrente\n\t\t[0] Disconnetti\n\n\tScelta: ");
+                    printf("\n\tSelezionare operazione da eseguire:\n\n\t\t"
+
+                                "[1] Apri archivio bancario\n\t\t"
+                                "[2] Crea nuovo archivio\n\t\t"
+                                "[3] Inserisci nuovo cliente nell'archivio\n\t\t"
+                                "[4] Visualizza i record nell'archivio\n\t\t"
+                                "[5] Ricerca cliente nell'archivio\n\t\t"
+                                "[6] Visualizza movimenti conto corrente\n\t\t"
+                                "[0] Disconnetti\n\n\t"
+
+                                "Scelta: ");
 
                     fflush(stdin);
 
@@ -480,7 +499,14 @@ void main(int argc, char* argv[]){
 
                             printf("\n\t\t\tPORTALE CLIENTI\n");
 
-                            printf("\n\tSelezionare operazione da eseguire:\n\n\t\t[1] Effettua operazione\n\t\t[2] Visualizza movimenti\n\t\t[3] Visualizza informazioni conto\n\t\t[0] Logout\n\n\tScelta: ");
+                            printf("\n\tSelezionare operazione da eseguire:\n\n\t\t"
+                                    
+                                    "[1] Effettua operazione\n\t\t"
+                                    "[2] Visualizza movimenti\n\t\t"
+                                    "[3] Visualizza informazioni conto\n\t\t"
+                                    "[0] Logout\n\n\t"
+                                    
+                                    "Scelta: ");
 
                             fflush(stdin);
 
@@ -494,7 +520,12 @@ void main(int argc, char* argv[]){
 
                                     printf("\n\t\t\tEFFETTUA OPERAZIONE BANCARIA\n");
 
-                                    printf("\n\tSeleziona il tipo di operazione da eseguire\n\n\t\t[1] Prelievo \n\t\t[2] Deposito\n\n\tScelta: ");
+                                    printf("\n\tSeleziona il tipo di operazione da eseguire\n\n\t\t"
+                                            
+                                            "[1] Prelievo \n\t\t"
+                                            "[2] Deposito\n\n\t"
+                                            
+                                            "Scelta: ");
 
                                     do{
 
@@ -851,13 +882,13 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){ //pathMovime
 
         cliente.data_nascita.gg = checkInt();
 
-        if (cliente.data_nascita.gg < 1 || cliente.data_nascita.gg > 31){
+        if (cliente.data_nascita.gg < GIORNO_MIN || cliente.data_nascita.gg > GIORNO_MAX){
 
             printf("\n\tErrore! Giorno invalido, inserire nuovamente: ");
 
         }
 
-    } while (cliente.data_nascita.gg < 1 || cliente.data_nascita.gg > 31);
+    } while (cliente.data_nascita.gg < GIORNO_MIN || cliente.data_nascita.gg > GIORNO_MAX);
     
     printf("\tInserisci il mese di nascita (mm): ");
 
@@ -865,12 +896,12 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){ //pathMovime
 
         cliente.data_nascita.mm = checkInt();
 
-        if (cliente.data_nascita.mm < 1 || cliente.data_nascita.mm > 12){
+        if (cliente.data_nascita.mm < MESE_MIN || cliente.data_nascita.mm > MESE_MAX){
 
             printf("\n\tErrore! Mese invalido, inserire nuovamente: ");
 
         }
-    } while (cliente.data_nascita.mm < 1 || cliente.data_nascita.mm > 12);
+    } while (cliente.data_nascita.mm < MESE_MIN || cliente.data_nascita.mm > MESE_MAX);
     
     printf("\tInserisci l'anno di nascita (aaaa): ");
 
@@ -930,15 +961,15 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){ //pathMovime
 
     printf("\n\tINFORMAZIONI FINANZIARIE:\n");
 
-    printf("\n\tInserisci la quantita' massima di denaro prelevabile per operazione (minimo %.2lf euro): ", MIN_PRELIEVOMAX);
+    printf("\n\tInserisci la quantita' massima di denaro prelevabile per operazione (minimo %.2lf euro): ", MIN_PRELEVABILE);
 
     do{
         
         cliente.prelievo_max = checkDouble();
 
-        if(cliente.prelievo_max < MIN_PRELIEVOMAX){printf("\n\tErrore! Inserire un importo maggiore o uguale a %.2lf!\n\tInserire nuovamente: ", MIN_PRELIEVOMAX);}
+        if(cliente.prelievo_max < MIN_PRELEVABILE){printf("\n\tErrore! Inserire un importo maggiore o uguale a %.2lf!\n\tInserire nuovamente: ", MIN_PRELEVABILE);}
 
-    } while(cliente.prelievo_max < MIN_PRELIEVOMAX);
+    } while(cliente.prelievo_max < MIN_PRELEVABILE);
     
     if(creaFileMovimenti(pathMovimenti, cliente.numero_conto, banca) && scriviClienteFILE(path, cliente)){
         
@@ -1042,7 +1073,7 @@ int getBanca(char * pathBanca, char * pathMovimenti, char * banca){
 
     cartella = opendir(pathBanca);
 
-    if(cartella == NULL){ // se non vi e' una directory "BANCHE", la creo
+    if(cartella == NULL){ // se per qualche motivo non vi e' una directory "BANCHE", la creo
 
         mkdir(pathBanca);
 
@@ -1052,7 +1083,7 @@ int getBanca(char * pathBanca, char * pathMovimenti, char * banca){
 
     while( (record = readdir(cartella)) && i<30 ){ //leggo la directory e ottengo la lista delle banche finché il mio array non e' pieno
 
-        if(strcmp(record->d_name,".")&& strcmp(record->d_name,"..")){ //esclude '.' e ".." 
+        if(strcmp(record->d_name,".") && strcmp(record->d_name,"..")){ //esclude '.' e ".." 
 
             if(strncmp(record->d_name,"MOVIMENTI_", 10)){ // Se i primi 10 caratteri del nome sono DIVERSI da "MOVIMENTI_" (cartella MOVIMENTI_<banca>) ho trovato quello che volevo
 
@@ -1078,9 +1109,9 @@ int getBanca(char * pathBanca, char * pathMovimenti, char * banca){
 
     for (j=0;j<i; j++){ //print a schermo delle banche trovate, l'if permette il print su due colonne
 
-        if((j+2)%2==0){printf("\n\t\t");}else{printf("\t\t");}
+        if((j+2)%2==0){printf("\n\t\t");}else{printf("\t");}
 
-        printf("[%2d] %18s", j+1, listaBanche[j]);
+        printf("[%2d] %18s %9s ", j+1, listaBanche[j], " "); // %9s e' stato inserito per problemi legati all'allineamento delle colonne
 
     }
 
@@ -1100,7 +1131,7 @@ int getBanca(char * pathBanca, char * pathMovimenti, char * banca){
 
         strcpy(banca, listaBanche[scelta-1]);
 
-        strcat(pathBanca, banca);                       //path::             BANCHE\\<banca>
+        strcat(pathBanca, banca);                       //pathBanca::             BANCHE\\<banca>
 
         return 1;
 
@@ -1254,7 +1285,7 @@ Cliente getCliente(char * pathBanca, long pos){
 
 }
 
-int setCliente(char * pathBanca, Cliente cliente){ // Salva il cliente passato nell'archivio eseguendo la ricerca in quest'ultimo tramite il numero di conto (identificatore univoco)
+int setCliente(char * pathBanca, Cliente cliente){ // Salva il cliente passato nell'archivio eseguendo la ricerca tramite il numero di conto (identificatore univoco)
 
     FILE * flogico;
 
@@ -1286,8 +1317,12 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
         
         fileMovimenti = fopen(pathMovimenti, "rb+");
 
-        if(!fseek(fileMovimenti, -(long)sizeof(Movimenti), SEEK_END)){ //If successful, fseek returns 0. If it fails, fseek returns a nonzero value
+        fseek(fileMovimenti, 0, SEEK_END);
 
+        if(ftell(fileMovimenti)){ 
+
+            fseek(fileMovimenti, -(long)sizeof(Movimenti), SEEK_CUR);
+            
             fread(&movimentoLetto, sizeof(Movimenti), 1, fileMovimenti);
 
             movimentoLetto.numero_operazione++;
@@ -1306,13 +1341,13 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
 
             printf("\n\t\t\t\tEFFETTUA PRELIEVO BANCARIO\n");
             
-            if(datiCliente->saldo && datiCliente->saldo>=PRELIEVO_MINIMO){
+            if(datiCliente->saldo && datiCliente->saldo >= PRELIEVO_MINIMO){
                 
                 printf("\n\tSaldo disponibile: %8.2lf eur\t\tPrelievo massimo per operazione: %8.2lf eur\n\n\tInserire la quantita' di denaro da prelevare, inserire 0 per annullare l'operazione.\n\n\tImporto: ",  datiCliente->saldo, datiCliente->prelievo_max);
 
                 input = checkDouble();
 
-                if(input<=datiCliente->prelievo_max && input<= datiCliente->saldo && input >= PRELIEVO_MINIMO){
+                if(input<=datiCliente->prelievo_max && input <= datiCliente->saldo && input >= PRELIEVO_MINIMO){
 
                     if(!input){
 
@@ -1350,15 +1385,23 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
                                 
                                 fseek(fileMovimenti, 0, SEEK_END); 
                                 
-                                /*
-                                * Non ho idea del motivo per cui la scrittura su file non funzioni senza questo fseek. I valori 
-                                * del puntatore prima e dopo l'esecuzione restano gli stessi eppure senza di essa il codice non funziona. 
-                                * Errno non restituisce alcun errore.
-                                * Possibile causa in:
-                                * 
-                                *  if(!fseek(fileMovimenti, -(long)sizeof(Movimenti), SEEK_END)) ?
-                                * 
-                                */
+                                    /*
+                                    * Non ho idea del motivo per cui la scrittura su file non funzioni senza questo fseek. I valori 
+                                    * del puntatore prima e dopo l'esecuzione restano gli stessi eppure senza di essa il codice non funziona. 
+                                    * Ho tentato a modificare l'IF a riga 1322 (l'unico punto in cui il puntatore viene modificato prima dell'fwrite) in
+                                    *   
+                                    *   if(!fseek(fileMovimenti, -(long)sizeof(Movimenti), SEEK_END)){ 
+                                    *        
+                                    *        fread(&movimentoLetto, sizeof(Movimenti), 1, fileMovimenti);
+                                    *   
+                                    *        movimentoLetto.numero_operazione++;
+                                    *   }
+                                    * 
+                                    * poiche' quanto fseek restituisce 0 in caso di successo, ma i risultati non sono cambiati.
+                                    * 
+                                    * Errno non restituisce alcun errore.
+                                    * 
+                                    */
 
                                 //printf("\n\nPuntatore dopo di fseek: %ul\n\n", ftell(fileMovimenti)); //debug
 
@@ -1374,7 +1417,7 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
 
                                 } else{
                                 
-                                    printf("\n\tErrore! impossibile eseguire l'operazione!");
+                                    printf("\n\tErrore! impossibile eseguire l'operazione!\n\t");
 
                                     system("pause");
 
@@ -1482,17 +1525,7 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
 
                                 //system("pause"); //debug
                                 
-                                fseek(fileMovimenti, 0, SEEK_END); //non ho idea del motivo per cui la scrittura non funzioni senza questo fseek
-
-                                 /*
-                                  * Non ho idea del motivo per cui la scrittura su file non funzioni senza questo fseek i valori 
-                                  * del puntatore prima e dopo l'esecuzione restano gli stessi eppure senza quest'istruzione 
-                                  * il codice non funziona. Errno non restituisce alcun errore.
-                                  * Possibile causa in:
-                                  * 
-                                  *  if(!fseek(fileMovimenti, -(long)sizeof(Movimenti), SEEK_END)) ?
-                                  * 
-                                  */
+                                fseek(fileMovimenti, 0, SEEK_END); //   VEDI COMMENTO RIGA 1389
                                 
                                 //printf("\n\nPuntatore dopo di fseek: %ul\n\n", ftell(fileMovimenti)); //debug
 
@@ -1595,7 +1628,15 @@ void menuRicerca(char * pathBanca){
 
         printf("\n\t\t   RICERCA CLIENTE ARCHIVIO BANCARIO\n");
 
-        printf("\n\tSelezionare criterio di ricerca:\n\n\t\t[1] Ricerca per nominativo\n\t\t[2] Ricerca per data di nascita\n\t\t[3] Ricerca per numero di conto\n\t\t[4] Ricerca per username\n\t\t[0] Indietro\n\n\tScelta: ");
+        printf("\n\tSelezionare criterio di ricerca:\n\n\t\t"
+               
+                "[1] Ricerca per nominativo\n\t\t"
+                "[2] Ricerca per data di nascita\n\t\t"
+                "[3] Ricerca per numero di conto\n\t\t"
+                "[4] Ricerca per username\n\t\t"
+                "[0] Indietro\n\n\t"
+                
+                "Scelta: ");
 
         fflush(stdin);
 
@@ -1877,7 +1918,7 @@ int visualizzaRecordPosizione(char * pathBanca, long pos){
     if(esisteFile(pathBanca)){
 
         /* 
-         *  In teoria non sarebbe necesario effettuare questo controllo in quanto viene eseguito un controllo a monte 
+         *  In teoria non sarebbe necessario effettuare questo controllo in quanto viene eseguito un controllo a monte 
          *  dell'esistenza del file, tuttavia questa funzione mi permette di verificare implicitamente qualora il file risulti
          *  aperto in qualche altra porzione di codice
          * 
@@ -1970,7 +2011,14 @@ void menuVisualizzazioneMovimenti(char *pathMovimenti){
 
         printf("\n\t\t\tVISUALIZZAZIONE MOVIMENTI BANCARI\n");
 
-        printf("\n\tSeleziona il criterio di visualizzazione dei movimenti bancari:\n\n\t\t[1] Visualizza tutti \n\t\t[2] Visualizza per mese\n\t\t[3] Visualizza per tipo\n\t\t[0] Indietro\n\n\tScelta: ");
+        printf("\n\tSeleziona il criterio di visualizzazione dei movimenti bancari:\n\n\t\t"
+                
+                "[1] Visualizza tutti \n\t\t"
+                "[2] Visualizza per mese\n\t\t"
+                "[3] Visualizza per tipo\n\t\t"
+                "[0] Indietro\n\n\t"
+                
+                "Scelta: ");
         
         scelta = checkInt();
 
@@ -2020,7 +2068,13 @@ void menuVisualizzazioneMovimenti(char *pathMovimenti){
 
                 printf("\n\t\t\tVISUALIZZA MOVIMENTI PER TIPO\n");
 
-                printf("\n\tVisualizza:\n\n\t\t[1] Prelievi \n\t\t[2] Depositi\n\t\t[0] Indietro\n\n\tScelta: ");
+                printf("\n\tVisualizza:\n\n\t\t"
+                        
+                        "[1] Prelievi \n\t\t"
+                        "[2] Depositi\n\t\t"
+                        "[0] Indietro\n\n\t"
+                        
+                        "Scelta: ");
 
                 scelta = checkInt();
 
@@ -2143,7 +2197,7 @@ int visualizzaMovimentiMese(char * pathMovimenti, Data data){ // aggiungere cont
     if(esisteFile(pathMovimenti)){
 
         /* 
-         *  In teoria non sarebbe necesario effettuare questo controllo in quanto viene eseguito un controllo a monte 
+         *  In teoria non sarebbe necessario effettuare questo controllo in quanto viene eseguito un controllo a monte 
          *  dell'esistenza del file, tuttavia questa funzione mi permette di verificare implicitamente qualora il file risulti
          *  aperto in qualche altra porzione di codice
          * 
@@ -2243,7 +2297,7 @@ int visualizzaMovimentiTipo(char * pathMovimenti, char * tipo){
     if(esisteFile(pathMovimenti)){
 
         /* 
-         *  In teoria non sarebbe necesario effettuare questo controllo in quanto viene eseguito un controllo a monte 
+         *  In teoria non sarebbe necessario effettuare questo controllo in quanto viene eseguito un controllo a monte 
          *  dell'esistenza del file, tuttavia questa funzione mi permette di verificare implicitamente qualora il file risulti
          *  aperto in qualche altra porzione di codice
          * 
