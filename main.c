@@ -16,8 +16,6 @@
 #define MESE_MIN 1
 #define MESE_MAX 12
 
-                                         //      TIPI
-
 typedef struct Data {
 
     unsigned short int gg;
@@ -61,8 +59,6 @@ typedef struct Movimenti {
     double importo;
 
 }Movimenti;
-
-                                         //      PROTOTIPI
 
 void datasystem(Data *);
 
@@ -123,8 +119,6 @@ int visualizzaMovimentiMese(char *, Data);
 void resetBanche(char * , char * , char * );
 
 int loginCliente(char * , long * );
-
-                                         //      CODICE
 
 void main(int argc, char* argv[]){
 
