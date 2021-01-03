@@ -1992,7 +1992,7 @@ long ricercaNumeroConto(char * pathBanca, int numeroConto){
 
 }
 
-// VISUALIZZAZIONI 
+// VISUALIZZAZIONI
 
 void visualizzaRecordStruct(Cliente id){
 
