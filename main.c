@@ -7,11 +7,10 @@
 
 #define PATH_SUFFIX "BANCHE\\"
 #define PASSWORD "3PDINFO"
-#define PRELIEVO_MINIMO 0.01
-#define DEPOSITO_MINIMO 0.01
-#define ANNO_MAX 2025
+#define PRELIEVO_MINIMO 1.00 // Assegnare solamente valori positivi
+#define DEPOSITO_MINIMO 1.00 // Assegnare solamente valori positivi 
 #define ANNO_MIN 1900
-#define MIN_PRELEVABILE 500.00 
+#define MIN_PRELEVABILE 500.00  //Costante valutata all'interno dell'inserimento del cliente. Nonostante la semantica ingannevole, indica il valore minimo che prelievomax puo' assumere (MIN_PRELIEVOMAX era abbastanza atroce come nome)
 #define GIORNO_MIN 1
 #define GIORNO_MAX 31
 #define MESE_MIN 1
@@ -21,17 +20,17 @@
 
 typedef struct Data {
 
-    short int gg;
+    unsigned short int gg;
 
-    short int mm;
+    unsigned short int mm;
 
-    short int aaaa;
+    unsigned short int aaaa;
 
 }Data;
 
 typedef struct Cliente {  
 
-    int numero_conto;
+    unsigned int numero_conto;
     
     char cognome[30];
 
@@ -123,6 +122,8 @@ int visualizzaMovimentiMese(char *, Data);
 
 void resetBanche(char * , char * , char * );
 
+int loginCliente(char * , long * );
+
                                          //      CODICE
 
 void main(int argc, char* argv[]){
@@ -137,11 +138,11 @@ void main(int argc, char* argv[]){
 
     int scelta, disconnesso = 1, fileok = 0;
 
-    long pos; //variabile utilizzata in portale cliente
+    strcpy(pathBanca, PATH_SUFFIX); // Inizializzo il mio pathBanca a BANCHE\
 
-    strcpy(pathBanca, PATH_SUFFIX); //Inizializzo il mio pathBanca a BANCHE\
+    mkdir(pathBanca); // Creo una directory "BANCHE" dove salverò tutti gli archivi bancari
 
-    mkdir(pathBanca); //Creo una directory "BANCHE" dove salverò tutti gli archivi bancari
+    system("color f0"); // nero su bianco, puramente per motivi d'aspetto 
     
     do{
 
@@ -160,7 +161,7 @@ void main(int argc, char* argv[]){
     
         switch(scelta){
 
-            case 1:
+            case 1: { // PORTALE IMPIEGATI
 
                 do{
 
@@ -184,7 +185,7 @@ void main(int argc, char* argv[]){
 
                     }
 
-                }while(strcmp(password, PASSWORD)); //
+                } while(strcmp(password, PASSWORD)); //
 
                 printf("\n\tLogin effettuato, benvenuto impiegato_05!\n\t ");
 
@@ -225,7 +226,7 @@ void main(int argc, char* argv[]){
 
                     switch(scelta){
 
-                        case 1:
+                        case 1: { // APRI ARCHIVIO
                            
                             if(fileok){
 
@@ -296,8 +297,9 @@ void main(int argc, char* argv[]){
                             }
 
                             break;
+                        }
 
-                        case 2: //CREA NUOVO ARCHIVIO
+                        case 2: { // CREA NUOVO ARCHIVIO
 
                             if(fileok){
 
@@ -333,7 +335,9 @@ void main(int argc, char* argv[]){
 
                             break;
 
-                        case 3:
+                        }
+
+                        case 3: { // INSERISCI CLIENTE
 
                             if(fileok){
                                 
@@ -357,7 +361,9 @@ void main(int argc, char* argv[]){
 
                             break;
 
-                        case 4:
+                        }
+
+                        case 4: { // VISUALIZZA I RECORD NELL'ARCHIVIO
 
                             if(fileok){
 
@@ -375,13 +381,17 @@ void main(int argc, char* argv[]){
 
                             break;
 
-                        case 5:
+                        }
+
+                        case 5: { // RICERCA CLIENTE NELL'ARCHIVIO
 
                             if (fileok){menuRicerca(pathBanca);} else{printf("\n\tErrore! e' necessario aprire o creare un archivio prima di eseguire questa funzione!\n\t"); system("pause");}
 
                             break;
 
-                        case 6:
+                        }
+
+                        case 6: { // VISUALIZZA MOVIMENTI CONTO CORRENTE
 
                             if (fileok){
 
@@ -431,7 +441,9 @@ void main(int argc, char* argv[]){
 
                             break;
 
-                        case 0:
+                        }
+
+                        case 0: { // DISCONNETTI
 
                             disconnesso = 1;
 
@@ -446,8 +458,10 @@ void main(int argc, char* argv[]){
                             scelta = -1; //valore impostato a -1 per la successiva valutazione della variabile nel menu principale
 
                             break;
-                        
-                        default:
+
+                        }
+
+                        default: {
 
                             printf("\n\tErrore! Scelta non consentita!");
             
@@ -455,14 +469,20 @@ void main(int argc, char* argv[]){
 
                             break;
 
+                        }
+
                     }
 
                 }while(!disconnesso);
 
                 break;
 
-            case 2:
+            }
 
+            case 2: { // PORTALE CLIENTI
+
+                long pos; 
+                
                 system("cls");
 
                 printf("\n\t\t\tLOGIN PORTALE CLIENTI");
@@ -514,7 +534,7 @@ void main(int argc, char* argv[]){
 
                             switch(scelta){
                                 
-                                case 1:
+                                case 1: { // EFFETTUA OPERAZIONE
 
                                     system("cls");
 
@@ -533,7 +553,7 @@ void main(int argc, char* argv[]){
 
                                         switch(scelta){
 
-                                            case 1:
+                                            case 1: {
 
                                                 if(eseguiOperazione(pathMovimenti, &cliente_Letto, "Prelievo")){
 
@@ -546,8 +566,10 @@ void main(int argc, char* argv[]){
                                                 }
 
                                                 break;
-                                            
-                                            case 2:
+
+                                            }
+
+                                            case 2: {
 
                                                 if(eseguiOperazione(pathMovimenti, &cliente_Letto, "Deposito")){
 
@@ -561,7 +583,9 @@ void main(int argc, char* argv[]){
 
                                                 break;
 
-                                            default:
+                                            }
+
+                                            default: {
 
                                                 if(scelta){printf("\n\tErrore! Scelta non consentita");}
 
@@ -569,19 +593,25 @@ void main(int argc, char* argv[]){
 
                                                 break;
 
+                                            }
+
                                         }
 
                                     } while(scelta<0 || scelta>2);
 
                                     break;
 
-                                case 2:
+                                }
+
+                                case 2: { // VISUALIZZA MOVIMENTI
 
                                     menuVisualizzazioneMovimenti(pathMovimenti);
 
                                     break;
 
-                                case 3:
+                                }
+
+                                case 3: { // VISUALIZZA INFORMAZIONI
 
                                     system("cls");
 
@@ -594,8 +624,9 @@ void main(int argc, char* argv[]){
                                     system("pause");
 
                                     break;
+                                }
 
-                                case 0:
+                                case 0: { // LOGOUT
 
                                     disconnesso = 1;
 
@@ -609,13 +640,18 @@ void main(int argc, char* argv[]){
 
                                     break;
 
-                                default:
+                                }
+
+                                default: {
                                     
                                     printf("\n\tErrore! Scelta non consentita!");
                 
                                     Sleep(1400);
 
                                     break;
+
+                                }
+
                             }
 
                         }while(!disconnesso);
@@ -634,7 +670,9 @@ void main(int argc, char* argv[]){
 
                 break; 
 
-            case 0:
+            }
+
+            case 0: { // TERMINE PROGRAMMA
 
                 printf("\n\tTermine programma...");
 
@@ -642,7 +680,9 @@ void main(int argc, char* argv[]){
 
                 break;
 
-            default:
+            }
+
+            default: {
 
                 printf("\n\tErrore! Scelta non consentita!");
             
@@ -650,7 +690,9 @@ void main(int argc, char* argv[]){
 
                 break;
 
-        }
+            }
+
+        }   
 
     }while(scelta); 
    
@@ -740,11 +782,11 @@ void datasystem(Data *data){
 
     struct tm *now= NULL;
 
-    time_t t;
+    time_t tempo;
 
-    time(&t);
+    time(&tempo);
 
-    now = localtime(&t);
+    now = localtime(&tempo);
 
     data->gg=now->tm_mday;
 
@@ -786,7 +828,7 @@ int loginCliente(char * pathBanca, long * pos){
 
         system("pause");
 
-    }else{
+    } else{
     
         printf("\n\t\tUsername: ");
 
@@ -794,19 +836,19 @@ int loginCliente(char * pathBanca, long * pos){
         
         gets(bufferUsername);
 
+        printf("\t\tPassword: ");
+
+        fflush(stdin);
+
+        gets(bufferPassword);
+
         *pos = ricercaUsername(pathBanca, bufferUsername); //il valore di pos varierà anche nel main
 
         if(*pos!=-1){
 
-            rewind(flogico);
+            fseek(flogico, *pos, SEEK_SET);
 
             fread(&clienteLetto, sizeof(Cliente), 1, flogico);
-
-            printf("\t\tPassword: ");
-
-            fflush(stdin);
-
-            gets(bufferPassword);
 
             if(!strcmp(clienteLetto.username, bufferUsername) && !strcmp(clienteLetto.password, bufferPassword)){
 
@@ -833,6 +875,10 @@ int loginCliente(char * pathBanca, long * pos){
 int caricaCliente(char * path, char* pathMovimenti , char * banca){ //pathMovimenti deve essere BANCHE\\MOVIMENTI_<banca> 
     
     Cliente cliente;
+
+    Data dataAttuale;
+
+    datasystem(&dataAttuale);
     
     cliente.numero_conto = getNextConto(path);
 
@@ -909,9 +955,9 @@ int caricaCliente(char * path, char* pathMovimenti , char * banca){ //pathMovime
 
         cliente.data_nascita.aaaa = checkInt();
 
-        if (cliente.data_nascita.aaaa < ANNO_MIN || cliente.data_nascita.aaaa > ANNO_MAX){printf("\n\tErrore! Anno invalido, inserire anno compreso tra [%4d-%4d]: ", ANNO_MIN, ANNO_MAX);}
+        if (cliente.data_nascita.aaaa < ANNO_MIN || cliente.data_nascita.aaaa > dataAttuale.aaaa){printf("\n\tErrore! Anno invalido, inserire anno compreso tra [%4d-%4d]: ", ANNO_MIN, dataAttuale.aaaa);}
 
-    } while (cliente.data_nascita.aaaa < ANNO_MIN || cliente.data_nascita.aaaa > ANNO_MAX);
+    } while (cliente.data_nascita.aaaa < ANNO_MIN || cliente.data_nascita.aaaa > dataAttuale.aaaa);
 
     printf("\tInserisci sesso dell'cliente: ");
 
@@ -1185,7 +1231,7 @@ int creaArchivio(char * pathBanca, char* pathMovimenti, char * banca){
 
                 } else{
 
-                    printf("\n\tErrore! Il file potrebbe essere gia' esistente");
+                    printf("\n\tErrore! Il file potrebbe essere gia' esistente\n\t");
 
                     return 0;
 
@@ -1377,7 +1423,7 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
 
                         switch(conferma){
 
-                            case 'Y':
+                            case 'Y': {
 
                                 //printf("\n\nPuntatore prima di fseek: %ul\n\n", ftell(fileMovimenti)); //debug
 
@@ -1429,7 +1475,9 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
 
                                 break;
 
-                            case 'N':
+                            }
+
+                            case 'N': {
 
                                 printf("\n\tOperazione annullata!\n\t");
 
@@ -1437,11 +1485,15 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
 
                                 break;
 
-                            default:
+                            }
+
+                            default: {
 
                                 printf("\n\tErrore! Scelta non consentita, inserire nuovamente: ");
 
                                 break;
+
+                            }
 
                         }
 
@@ -1519,7 +1571,7 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
 
                         switch(conferma){
 
-                            case 'Y':
+                            case 'Y': {
 
                                 //printf("\n\nPuntatore prima di fseek: %ul\n\n", ftell(fileMovimenti)); //debug
 
@@ -1552,8 +1604,9 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
                                 }
 
                                 break;
+                            }
 
-                            case 'N':
+                            case 'N': {
 
                                 printf("\n\tOperazione annullata!");
 
@@ -1561,11 +1614,16 @@ int eseguiOperazione(char* pathMovimenti, Cliente *datiCliente, char * operazion
 
                                 break;
 
-                            default:
+                            }
+
+                            default: {
 
                                 printf("\n\tErrore! Scelta non consentita, inserire nuovamente: ");
 
                                 break;
+
+                            }
+
                         }
 
                     } while(conferma!='Y' && conferma != 'N');
@@ -1618,11 +1676,13 @@ void menuRicerca(char * pathBanca){
 
     char username[50];
 
-    Data data;
+    Data data, dataAttuale;
     
     do{
 
         pos = -1;
+
+        datasystem(&dataAttuale);
 
         system("cls");
 
@@ -1644,7 +1704,7 @@ void menuRicerca(char * pathBanca){
 
         switch(scelta){
 
-            case 1: //ricerca per nominativo
+            case 1: {//ricerca per nominativo
                     
                 system("cls");
 
@@ -1668,7 +1728,9 @@ void menuRicerca(char * pathBanca){
 
                 break;
 
-            case 2: //ricerca per data di nascita
+            }
+
+            case 2: {//ricerca per data di nascita
                     
                 system("cls");
 
@@ -1676,15 +1738,45 @@ void menuRicerca(char * pathBanca){
 
                 printf("\n\tInserire il giorno di nascita del cliente da ricercare: ");
 
-                data.gg = checkInt();
+                do {
+
+                    data.gg = checkInt();
+
+                    if(data.gg < GIORNO_MIN || data.gg > GIORNO_MAX){
+
+                        printf("\n\tErrore! inserire un valore compreso tra %d e %d\n\tInserire nuovamente: ", GIORNO_MIN, GIORNO_MAX);
+
+                    }
+
+                } while(data.gg < GIORNO_MIN || data.gg > GIORNO_MAX);
 
                 printf("\tInserire il mese di nascita del cliente da ricercare: ");
 
-                data.mm = checkInt();
+                do {
+
+                    data.mm = checkInt();
+
+                    if(data.mm < MESE_MIN || data.mm > MESE_MAX){
+
+                        printf("\n\tErrore! inserire un valore compreso tra %d e %d\n\tInserire nuovamente: ", MESE_MIN, MESE_MAX);
+
+                    }
+
+                } while(data.mm < MESE_MIN || data.mm > MESE_MAX);
 
                 printf("\tInserire l'anno di nascita del cliente da ricercare: ");
 
-                data.aaaa = checkInt();
+                do {
+
+                    data.aaaa = checkInt();
+
+                    if(data.aaaa < ANNO_MIN || data.aaaa > dataAttuale.aaaa){
+
+                        printf("\n\tErrore! inserire un valore compreso tra %d e %d\n\tInserire nuovamente: ", ANNO_MIN, dataAttuale.aaaa);
+
+                    }
+
+                } while(data.aaaa < ANNO_MIN || data.aaaa > dataAttuale.aaaa);
 
                 pos = ricercaData(pathBanca, data);
 
@@ -1692,26 +1784,46 @@ void menuRicerca(char * pathBanca){
 
                 break;
 
-            case 3: //ricerca per numero del conto
+            }
+
+            case 3: { //ricerca per numero del conto
                     
                 system("cls");
 
                 printf("\n\t\t   RICERCA CLIENTE PER NUMERO DI CONTO\n");
 
-                printf("\n\tInserire il numero di conto del cliente da ricercare: ");
+                printf("\n\tInserire il numero di conto del cliente da ricercare, 0 per annullare l'operazione: ");
 
-                numeroconto = checkInt();
+                do{
+                    numeroconto = checkInt();
+
+                    if(numeroconto<0){
+
+                        printf("\n\tErrore! inserire un valore maggiore o uguale a 0!\n\tInserire nuovamente: ");
+
+                    }
+
+                }while(numeroconto < 0);
+
+                if(numeroconto){
+
+                    pos = ricercaNumeroConto(pathBanca, numeroconto);
+
+                    if (pos != -1){visualizzaRecordPosizione(pathBanca, pos);} else{printf("\n\tNon e' stato trovato alcun record che corrispondeva ai criteri desiderati");}
+
+                    Sleep(1400);
+
+                } else {
+
+                    printf("\n\tOperazione annullata");
+
+                }
                 
-                pos = ricercaNumeroConto(pathBanca, numeroconto);
-
-                if (pos != -1){visualizzaRecordPosizione(pathBanca, pos);} else{printf("\n\tNon e' stato trovato alcun record che corrispondeva ai criteri desiderati");}
-
-                Sleep(1400);
-
                 break;
 
-            case 4: //ricerca per username
-                    
+            }
+
+            case 4: { //ricerca per username 
                 system("cls");
 
                 printf("\n\t\t   RICERCA CLIENTE PER USERNAME\n");
@@ -1727,12 +1839,15 @@ void menuRicerca(char * pathBanca){
                 if(pos != -1){visualizzaRecordPosizione(pathBanca, pos);} else{printf("\n\tNon e' stato trovato alcun record che corrispondeva ai criteri desiderati");}
 
                 break;
+            }
 
-            default:
+            default: {
 
                 if(scelta){printf("\n\tErrore! Scelta non consentita!");}
                 
-                break; 
+                break;
+
+            }
 
         }
 
@@ -1743,7 +1858,7 @@ void menuRicerca(char * pathBanca){
             system("pause");
 
         } 
-
+    
     } while(scelta);
     
 }
@@ -1762,9 +1877,9 @@ long ricercaUsername(char * pathBanca, char * username){
 
     while(!feof(flogico)){
 
-        if(!strcasecmp(cliente_letto.username, username)){ // !(strcmp(cliente_letto.username, username) <- La discriminazione tra lower e uppercase non funziona?
+        if(!strcmp(cliente_letto.username, username)){ 
 
-            pos = ftell(flogico) - sizeof(Cliente); 
+            pos = ftell(flogico) - (long)sizeof(Cliente); 
 
             break;
 
@@ -1778,7 +1893,7 @@ long ricercaUsername(char * pathBanca, char * username){
 
 }
 
-long ricercaNominativo(char * pathBanca, char * nome, char * cognome){ //dopo aver creato un nuovo archivio il programma va in loop
+long ricercaNominativo(char * pathBanca, char * nome, char * cognome){ 
 
     FILE * flogico;
 
@@ -2004,6 +2119,10 @@ void printMovimento(Movimenti movimento){
 void menuVisualizzazioneMovimenti(char *pathMovimenti){
 
     int scelta;
+
+    Data dataAttuale;
+
+    datasystem(&dataAttuale);
     
     do{
 
@@ -2024,7 +2143,7 @@ void menuVisualizzazioneMovimenti(char *pathMovimenti){
 
         switch(scelta){
 
-            case 1:
+            case 1: {
 
                 system("cls");
 
@@ -2038,21 +2157,43 @@ void menuVisualizzazioneMovimenti(char *pathMovimenti){
                 
                 break;
 
-            case 2:
+            }
+
+            case 2:{
 
                 system("cls");
 
                 printf("\n\t\t\tVISUALIZZA MOVIMENTI PER MESE\n");
 
+                printf("\n\tInserire mese [%d-%d]: ", MESE_MIN, MESE_MAX);
+
                 Data data;
 
-                printf("\n\tInserire mese: ");
+                do {
 
-                data.mm = checkInt();
+                    data.mm = checkInt();
 
-                printf("\tInserire anno: ");
+                    if(data.mm < MESE_MIN || data.mm > MESE_MAX){
 
-                data.aaaa = checkInt();
+                        printf("\n\tErrore! inserire un valore compreso tra %d e %d\n\tInserire nuovamente: ", MESE_MIN, MESE_MAX);
+
+                    }
+
+                } while(data.mm < MESE_MIN || data.mm > MESE_MAX);
+
+                printf("\tInserire anno [%d-%d]: ", ANNO_MIN, dataAttuale.aaaa);
+
+                do {
+
+                    data.aaaa = checkInt();
+
+                    if(data.aaaa < ANNO_MIN || data.aaaa > dataAttuale.aaaa){
+
+                        printf("\n\tErrore! inserire un valore compreso tra %d e %d\n\tInserire nuovamente: ", ANNO_MIN, dataAttuale.aaaa);
+
+                    }
+
+                } while(data.aaaa < ANNO_MIN || data.aaaa > dataAttuale.aaaa);
 
                 visualizzaMovimentiMese(pathMovimenti, data);
 
@@ -2062,7 +2203,9 @@ void menuVisualizzazioneMovimenti(char *pathMovimenti){
                 
                 break;
 
-            case 3:
+            }
+
+            case 3: {
 
                 system("cls");
 
@@ -2098,7 +2241,9 @@ void menuVisualizzazioneMovimenti(char *pathMovimenti){
 
                 break;
 
-            default:
+            }
+
+            default: {
 
                 if(scelta){
                     
@@ -2111,6 +2256,8 @@ void menuVisualizzazioneMovimenti(char *pathMovimenti){
                 }else{Sleep(800);}
 
                 break;
+
+            }
 
         }
         
@@ -2235,7 +2382,13 @@ int visualizzaMovimentiMese(char * pathMovimenti, Data data){ // aggiungere cont
 
         }
 
+        system("cls");
+
+        printf("\n\t\t\tVISUALIZZA MOVIMENTI PER MESE\n");
+
         printf("\n\tMovimenti effettuati nel mese di %s %d:\n", mese, data.aaaa); 
+
+        printf("\n\t____________________________________________\n");
         
         while(ultimoRecordLetto<ultimoRecordArchivio){
             
@@ -2334,6 +2487,10 @@ int visualizzaMovimentiTipo(char * pathMovimenti, char * tipo){
             return trovato;
 
         }
+
+        system("cls");
+
+        printf("\n\t\t\tVISUALIZZA MOVIMENTI PER TIPO\n");
 
         if(!strcmp(tipo, "Prelievo")){printf("\n\tPrelievi effettuati: \n");}else{printf("\n\tDepositi effettuati: \n");}
         
